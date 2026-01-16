@@ -1,0 +1,14 @@
+# Nix build outputs
+result
+result-*
+*.qcow2
+
+# SOPS personal keys (not the encrypted secrets)
+!~/.config/sops/age/key*.txt
+hosts/*/*_key
+
+# Editor/IDE
+.direnv/
+.envrc
+*.swp
+*~

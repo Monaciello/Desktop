@@ -1,0 +1,18 @@
+{
+  config,
+  pkgs,
+  ...
+}: {
+  home.file.".stalonetrayrc".text = ''
+    geometry 1x10
+    icon_size 24
+    background "#0f1c21"
+    grow_gravity NW
+    sticky true
+    skip_taskbar true
+    icon_gravity NW
+    transparent true
+    tint_color "#0f1c21"
+    tint_alpha 255
+  '';
+}

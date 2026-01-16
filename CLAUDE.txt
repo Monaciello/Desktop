@@ -1,0 +1,45 @@
+# CLAUDE.txt - NixOS Config Quick Reference
+
+## Structure
+```
+flake.nix                    # Entry point
+├── hosts/alice/             # SYSTEM: boot, services, hardware
+├── home-manager/            # USER: apps, dotfiles, tmux
+│   └── modules/             #   i3, kitty, neovim, xonsh...
+├── shells/default.nix       # PROJECT: dev tools (nix develop)
+└── secrets/alice.yaml       # sops-nix encrypted
+```
+
+## Layer Rule
+```
+SYSTEM (nixos-rebuild)  → hardware, services, DE
+USER   (home-manager)   → apps, dotfiles, shell config
+PROJECT (nix develop)   → python, uv, bats, shellcheck
+RUNTIME (.gitignored)   → .venv/, node_modules/
+```
+
+## Commands
+```bash
+sudo nixos-rebuild switch --flake ~/.config/nixos#alice
+home-manager switch --flake ~/.config/nixos#sasha@alice
+nix develop .#dev     # python, uv, shellcheck, bats
+nix flake check       # validate before commit
+```
+
+## Keybinds
+```
+i3: Alt+Return=terminal  Alt+s=rofi  Alt+hjkl=focus  Win+v=firefox
+tmux: Ctrl+Space=prefix  prefix+hjkl=panes  prefix+c=new window
+```
+
+## Current Phase
+Phase 3: VM Testing ← HERE
+- [ ] Run: nix build .#nixosConfigurations.alice.config.system.build.vm
+- [ ] Git commits (Option A - clean history)
+- [ ] Consolidate docs → README.md
+
+## Decisions
+- xonsh everywhere (Python superset shell)
+- Adapta-Nokto theme, Bibata cursor
+- Declarative tmux (no TPM needed)
+- Dev tools in shells/, not home.packages
