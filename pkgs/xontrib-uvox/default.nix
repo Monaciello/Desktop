@@ -1,12 +1,13 @@
 {
   lib,
-  python3Packages,
+  python3,
   fetchFromGitHub,
+  uv,
 }:
-python3Packages.buildPythonPackage rec {
+python3.pkgs.buildPythonPackage {
   pname = "xontrib-uvox";
   version = "0.1.1";
-  pyproject = true;
+  format = "pyproject";
 
   src = fetchFromGitHub {
     owner = "LoicGrobol";
@@ -15,28 +16,35 @@ python3Packages.buildPythonPackage rec {
     hash = "sha256-VM/TV3/L1QCw/kmsw/9JTO61CnWuP0l8s3FyGbNtLqE=";
   };
 
+  nativeBuildInputs = with python3.pkgs; [
+    setuptools
+    wheel
+    pythonRelaxDepsHook
+  ];
+
+  pythonRemoveDeps = [ "uv" ];
+
+  propagatedBuildInputs = with python3.pkgs; [
+    xonsh
+  ];
+
   postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace 'license = "MIT"' 'license = {text = "MIT"}'
+    substituteInPlace xontrib_uvox/uvoxapi.py \
+      --replace-warn "from uv import find_uv_bin" 'def find_uv_bin(): return "${uv}/bin/uv"'
   '';
 
-  build-system = [
-    python3Packages.setuptools
-    python3Packages.wheel
-  ];
-
-  dependencies = [
-    python3Packages.xonsh
-    python3Packages.uv
-  ];
-
   doCheck = false;
+
+  pythonImportsCheck = [
+    "xontrib_uvox"
+  ];
 
   meta = with lib; {
     description = "Python virtual environment manager for xonsh using uv";
     homepage = "https://github.com/LoicGrobol/xontrib-uvox";
     license = licenses.mit;
-    maintainers = [
+    mainProgram = "xontrib-uvox";
+    maintainers = with maintainers; [
       {
         name = "Loïc Grobol";
         github = "LoicGrobol";

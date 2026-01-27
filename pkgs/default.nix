@@ -23,5 +23,5 @@
 # as standalone buildable/installable units.
 #
 pkgs: {
-  xontrib-uvox = pkgs.callPackage ./xontrib-uvox {};
+  xontrib-uvox = pkgs.callPackage ./xontrib-uvox { inherit (pkgs) uv; };
 }

@@ -105,7 +105,7 @@ in {
 
   # Printing disabled per user preference
   # services.printing.enable = true;
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
 
   # ==========================================================================
   # Audio - PipeWire
@@ -263,7 +263,8 @@ in {
     # (nerdfetch.override { fonts = [ "JetBrainsMono" "CascadiaCode" ]; }) not needed
   ];
 
-  programs.xonsh.enable = true;
+  # xonsh is provided by xonUvox (users.users.sasha.shell) which includes xontrib-uvox
+  # programs.xonsh.enable would install plain xonsh and shadow xonUvox in the system profile
 
   # ==========================================================================
   # Environment Variables

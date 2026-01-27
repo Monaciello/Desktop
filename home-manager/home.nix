@@ -13,14 +13,8 @@
     ./modules/all.nix
   ];
 
-  # Note: Overlays are now applied in flake.nix homeConfigurations
-  # Configure your nixpkgs instance
-  nixpkgs.config = {
-    # Disable if you don't want unfree packages
-    allowUnfree = true;
-    # Workaround for https://github.com/nix-community/home-manager/issues/2942
-    allowUnfreePredicate = _: true;
-  };
+  # nixpkgs.config is inherited from NixOS via home-manager.useGlobalPkgs
+  # allowUnfree is set in hosts/alice/default.nix
 
   home = {
     username = "sasha";
@@ -92,13 +86,13 @@
   # Git configuration
   programs.git = {
     enable = true;
-    userName = "monaciello";
-    userEmail = "tahgijones@gmail.com";
     signing = {
       key = "/home/sasha/.ssh/id_ed25519.pub";
       signByDefault = true;
     };
-    extraConfig = {
+    settings = {
+      user.name = "monaciello";
+      user.email = "tahgijones@gmail.com";
       gpg.format = "ssh";
     };
   };
