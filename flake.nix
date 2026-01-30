@@ -62,7 +62,7 @@
     nixosModules = import ./modules/nixos;
 
     # Reusable home-manager modules you might want to export
-    homeManagerModules = import ./modules/home-manager;
+    homeModules = import ./modules/home-manager;
 
     # NixOS system configurations
     # Available through 'nixos-rebuild --flake .#alice'

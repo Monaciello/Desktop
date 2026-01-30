@@ -2,44 +2,57 @@
 
 ## Structure
 ```
-flake.nix                    # Entry point
+flake.nix
 ├── hosts/alice/             # SYSTEM: boot, services, hardware
-├── home-manager/            # USER: apps, dotfiles, tmux
-│   └── modules/             #   i3, kitty, neovim, xonsh...
-├── shells/default.nix       # PROJECT: dev tools (nix develop)
-└── secrets/alice.yaml       # sops-nix encrypted
+│   └── secrets.yaml         # sops-nix encrypted (skarabox pattern)
+├── home-manager/            # USER: apps, dotfiles
+│   ├── modules/             # i3, kitty, neovim, xonsh
+│   ├── packages/            # apps, cli, dev
+│   └── programs/            # git, tmux
+├── shells/                  # PROJECT: dev environments
+├── docs/                    # keybindings, skarabox guides
+└── .claude/                 # AI guardrails (AI.md, CLAUDE.md)
 ```
 
 ## Layer Rule
 ```
-SYSTEM (nixos-rebuild)  → hardware, services, DE
-USER   (home-manager)   → apps, dotfiles, shell config
-PROJECT (nix develop)   → python, uv, bats, shellcheck
-RUNTIME (.gitignored)   → .venv/, node_modules/
+SYSTEM  (nixos-rebuild)  → hardware, services, boot
+USER    (home-manager)   → apps, dotfiles, shell
+PROJECT (nix develop)    → python, uv, dev tools
+RUNTIME (.gitignored)    → .venv/, node_modules/
 ```
 
 ## Commands
 ```bash
 sudo nixos-rebuild switch --flake ~/.config/nixos#alice
 home-manager switch --flake ~/.config/nixos#sasha@alice
-nix develop .#dev     # python, uv, shellcheck, bats
-nix flake check       # validate before commit
+nix develop .#dev
+nix flake check
 ```
 
-## Keybinds
-```
-i3: Alt+Return=terminal  Alt+s=rofi  Alt+hjkl=focus  Win+v=firefox
-tmux: Ctrl+Space=prefix  prefix+hjkl=panes  prefix+c=new window
-```
+## Current Phase: Documentation & Validation
 
-## Current Phase
-Phase 3: VM Testing ← HERE
+Completed 2026-01-29:
+- [x] Consolidate docs → README.md
+- [x] Create docs/keybindings.md
+- [x] Create .claude/AI.md + CLAUDE.md
+- [x] Correct skarabox SOPS pattern in docs
+
+Remaining:
+- [ ] Run: nix flake check
 - [ ] Run: nix build .#nixosConfigurations.alice.config.system.build.vm
-- [ ] Git commits (Option A - clean history)
-- [ ] Consolidate docs → README.md
+- [ ] Complete 10 action items (see README.md)
+- [ ] Git commit clean history
+
+## Documentation
+- README.md - overview, action items, roadmap
+- docs/keybindings.md - i3, tmux, neovim, kitty
+- docs/skarabox/ - sops-setup.md, setup-instructions.md
+- .claude/ - AI.md (guardrails), CLAUDE.md (constraints)
 
 ## Decisions
 - xonsh everywhere (Python superset shell)
 - Adapta-Nokto theme, Bibata cursor
-- Declarative tmux (no TPM needed)
+- Declarative tmux (no TPM)
 - Dev tools in shells/, not home.packages
+- Skarabox dual-key SOPS pattern for secrets
