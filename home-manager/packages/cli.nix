@@ -9,12 +9,12 @@
     tmux
 
     # Modern CLI replacements
-    eza       # ls replacement
-    bat       # cat replacement
-    fzf       # fuzzy finder
-    ripgrep   # grep replacement
-    zoxide    # cd replacement
-    btop      # htop replacement
+    eza # ls replacement
+    bat # cat replacement
+    fzf # fuzzy finder
+    ripgrep # grep replacement
+    zoxide # cd replacement
+    btop # htop replacement
     fastfetch # system info
 
     # Utilities

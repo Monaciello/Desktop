@@ -48,8 +48,12 @@
     adapta-gtk-theme
     papirus-icon-theme
 
+    # Keyboards
+    keymapp # ZSA keyboard configuration GUI
+    wally-cli # ZSA firmware flasher
+
     # Virtualization - TODO: move to hosts/alice/services/virt.nix
-    libvirt 
+    libvirt
     qemu
     spice-vdagent
     virt-manager
