@@ -102,3 +102,56 @@ Programs with configurable keybindings in this config.
 | `Enter` | Accept |
 | `Escape` | Cancel |
 | `Ctrl+v` | Paste |
+
+## ZSA Keyboard Layers
+
+**Hardware:** ZSA Ergodox EZ with custom layered configuration
+
+**Tools:**
+- Configuration: `keymapp` (GUI) or https://configure.zsa.io (web)
+- Flashing: `wally-cli` (CLI tool)
+
+**Documentation:** See `docs/keyboard/` directory:
+- `layer-reference.md` - Complete overview and reference
+- `PHASE-*-GUIDE.md` - Step-by-step implementation guides (Phase 2-6)
+- `README.md` - Quick start and navigation
+
+### Layer 0: BASE
+Standard QWERTY - triggers to other layers via Space, Enter, Hyper, Meh
+
+### Layer 1: NAVIGATION (Hold Space)
+```
+H/J/K/L       → Arrow keys (vim-style)
+I/K           → Page Up/Down
+U/O           → Home/End
+1-0, -, =     → F1-F12
+```
+
+### Layer 2: DEV/EDITOR (Hold Enter) - HIGH PRIORITY
+```
+Y/P           → System clipboard yank/paste (" +y / " +p)
+G/K/R/A       → LSP (go def / hover / rename / code actions)
+F/C/B         → Telescope (files / grep / buffers)
+1-9/M         → Harpoon (jump to file / menu)
+```
+
+### Layer 3: WINDOW MANAGER (Hold Hyper)
+```
+1-0           → Workspace switch (Alt+1-0)
+H/J/K/L       → Window focus (Alt+H/J/K/L)
+Shift+H/J/K/L → Window move (Alt+Shift+H/J/K/L)
+F/R/G         → Modes (fullscreen / resize / gaps)
+Thumb         → Tmux prefix (Ctrl+Space)
+```
+
+### Layer 4: APP LAUNCHER (Hold Meh)
+```
+S/D/F/L/O/V   → Apps (rofi / Discord / Flameshot / lf / Obsidian / Firefox)
+Vol ↑/↓/Mute  → Audio controls
+Bright ↑/↓    → Brightness control
+```
+
+### Layer 5: INTEGRATION (Optional)
+Context-aware automation via `kontroll` daemon.
+
+**See detailed mappings in:** `docs/keyboard/layer-reference.md`
