@@ -9,18 +9,42 @@ import os
 import os.path
 import socket
 import subprocess
+import re
 
 # ----------------------------
 # Constants
 # ----------------------------
 WALLPAPER_DIR = os.path.expandvars("$HOME/Pictures/wallpapers")
-$XONSH_SHOW_TRACEBACK = True
 
 # ----------------------------
-# Tools
+# Utilities
 # ----------------------------
-def pwd():
-    return os.getcwd()
+def run_safe(cmd, desc=""):
+    """Execute command with error handling"""
+    try:
+        subprocess.run(cmd, check=True)
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"✗ {desc}: {e}" if desc else f"✗ Error: {e}")
+        return False
+
+def ask_confirm(msg="Continue?"):
+    """Ask for user confirmation"""
+    return input(f"\n{msg} (y/N): ").lower() == 'y'
+
+def find_in_dir(dirpath, name_filter):
+    """Find files in directory matching filter"""
+    results = []
+    try:
+        for root, dirs, files in os.walk(dirpath):
+            for f in files:
+                if name_filter(f):
+                    full_path = os.path.join(root, f)
+                    if os.path.abspath(full_path).startswith(os.path.abspath(dirpath)):
+                        results.append(full_path)
+    except (ValueError, OSError):
+        pass
+    return results
 
 # ----------------------------
 # System Utilities
@@ -45,117 +69,73 @@ def nix_shell_name():
 # Wallpaper and Display
 # ----------------------------
 
-# set_wallpaper: Safely set wallpaper with path validation
-# Uses subprocess instead of os.system() to prevent command injection
 def set_wallpaper(args):
-    """Safely set wallpaper with path traversal protection"""
+    """Set wallpaper with search support"""
     if not args:
-        print("Usage: set_wallpaper <option> or <wallpaper_name>")
-        return None
+        print("Usage: wp <wallpaper> | wp ls | wp search <keyword>")
+        return
 
     option = args[0]
     if option == "ls":
-        try:
-            subprocess.run(['eza', '--icons', WALLPAPER_DIR], check=True)
-        except subprocess.CalledProcessError:
-            print("Failed to list wallpapers")
-        return None
+        run_safe(['eza', '--icons', WALLPAPER_DIR], "List wallpapers")
+        return
 
-    wallpaper = option
-    wallpaper_path = None
+    if option == "search" and len(args) > 1:
+        keyword = args[1].lower()
+        found = [f for f in os.listdir(WALLPAPER_DIR)
+                 if keyword in f.lower() and f != 'wallpaper']
+        if found:
+            print(f"Found {len(found)} match(es) for '{keyword}':")
+            for wp in sorted(found):
+                print(f"  • {wp}")
+        else:
+            print(f"No matches for '{keyword}'")
+        return
 
-    # Search for wallpaper in directory
-    for root, dirs, files in os.walk(WALLPAPER_DIR):
-        for file in files:
-            name, ext = os.path.splitext(file)
-            if name == wallpaper or file == wallpaper:
-                full_path = os.path.join(root, file)
+    # Find and set wallpaper
+    matches = find_in_dir(WALLPAPER_DIR,
+                         lambda f: f == option or os.path.splitext(f)[0] == option)
+    if not matches:
+        print(f"Error: Wallpaper '{option}' not found")
+        return
 
-                # Security: Prevent path traversal attacks
-                try:
-                    if not os.path.abspath(full_path).startswith(os.path.abspath(WALLPAPER_DIR)):
-                        print("Error: Path traversal detected")
-                        return None
-                except (ValueError, OSError):
-                    print("Error: Invalid path")
-                    return None
+    dest = os.path.join(WALLPAPER_DIR, 'wallpaper')
+    if run_safe(['cp', matches[0], dest], "Copy wallpaper"):
+        run_safe(['i3', 'restart'], "Restart i3")
+        print(f"✓ Wallpaper set to {option}")
 
-                wallpaper_path = full_path
-                break
-        if wallpaper_path:
-            break
-
-    if not wallpaper_path:
-        print(f"Error: Wallpaper '{wallpaper}' not found in {WALLPAPER_DIR}")
-        return None
-
-    # Copy wallpaper using subprocess (safer than os.system)
-    try:
-        dest = os.path.join(WALLPAPER_DIR, 'wallpaper')
-        subprocess.run(['cp', wallpaper_path, dest], check=True)
-        subprocess.run(['i3', 'restart'], check=True)
-        print(f"✓ Wallpaper changed to {wallpaper}")
-    except subprocess.CalledProcessError as e:
-        print(f"✗ Error: {e}")
-        return None
-
-    return None
-
-# untar: Safely extract tar archives with validation
 def untar(args):
-    """Safely extract tar archives with filename validation"""
+    """Extract tar archives"""
     if not args:
         print("Usage: untar <file.tar.xz|tar.gz|tar.bz2|tar>")
-        return None
+        return
 
     filename = args[0]
-
-    # Validate file extension
     if not filename.endswith(('.tar.xz', '.tar.gz', '.tar.bz2', '.tar')):
-        print("Error: Not a valid tar archive (use .tar, .tar.gz, .tar.bz2, or .tar.xz)")
-        return None
+        print("Error: Not a valid tar archive")
+        return
 
-    # Validate file exists
     if not os.path.exists(filename):
         print(f"Error: File not found: {filename}")
-        return None
+        return
 
-    # Extract safely using subprocess
-    try:
-        subprocess.run(['tar', '-xf', filename], check=True)
+    if run_safe(['tar', '-xf', filename], f"Extract {filename}"):
         print(f"✓ Extracted {filename}")
-    except subprocess.CalledProcessError as e:
-        print(f"✗ Error extracting {filename}: {e}")
-        return None
-
-    return None
-
-# set_display: Safely change display configuration with input validation
-# Uses subprocess instead of os.system() and validates profile names
-import re
 
 def set_display(args):
-    """Safely change display configuration with input validation"""
+    """Change display profile"""
     if not args:
-        print("Usage: set_display <profile>")
-        return None
+        print("Usage: d <profile>")
+        return
 
     profile = args[0]
-
-    # Validate profile name (alphanumeric, hyphens, underscores only)
     if not re.match(r'^[a-zA-Z0-9_-]+$', profile):
-        print(f"Error: Invalid profile name '{profile}' - use alphanumeric, hyphens, underscores only")
-        return None
+        print(f"Error: Invalid profile '{profile}'")
+        return
 
-    try:
-        subprocess.run(['autorandr', '-l', profile], check=True)
-        subprocess.run(['i3', 'restart'], check=True)
-        print(f"✓ Display profile changed to {profile}")
-    except subprocess.CalledProcessError as e:
-        print(f"✗ Error: {e}")
-        return None
-
-    return None
+    if run_safe(['autorandr', '-l', profile], "Load display profile"):
+        run_safe(['i3', 'restart'], "Restart i3")
+        print(f"✓ Display changed to {profile}")
 
 # ----------------------------
 # Networking
@@ -174,83 +154,54 @@ def get_local_ip():
 # Development Tools
 # ----------------------------
 
-# git_sync / gup: Safe git workflow with confirmation steps
-# ⚠️  WARNING: Automatically stages ALL changes in current directory (git add .)
-# Usage: gup <branch> <message>
-# Example: gup main "fix typo"
-# Safety: Includes confirmation prompts before staging, committing, and pushing
-# Best practice: Review 'git status' and 'git diff' before confirming
-# For sensitive/production repos: Use individual git commands instead
 def git_sync(args):
-    """Safe git sync with confirmation prompts (Option B implementation)"""
+    """Safe git workflow with confirmation prompts"""
     if len(args) < 2:
         print("Usage: gup <branch> <message>")
         return
 
-    branch = args[0]
-    commit_message = args[1]
+    branch, message = args[0], args[1]
 
-    try:
-        # Fetch updates
-        subprocess.run(['git', 'fetch'], check=True)
+    run_safe(['git', 'fetch'], "Fetch")
+    run_safe(['git', 'pull', 'origin', branch], "Pull")
 
-        # Pull from origin
-        subprocess.run(['git', 'pull', 'origin', branch], check=True)
+    print("\n--- Git Status ---")
+    subprocess.run(['git', 'status', '--short'], check=False)
 
-        # Show current status
-        print("\n--- Git Status ---")
-        subprocess.run(['git', 'status', '--short'], check=False)
+    if not ask_confirm("Stage all changes?"):
+        return
 
-        # Ask for confirmation before staging
-        response = input("\nStage all changes? (y/N): ")
-        if response.lower() != 'y':
-            print("Cancelled")
-            return
+    run_safe(['git', 'add', '.'], "Stage changes")
+    print("\n--- Staged Changes ---")
+    subprocess.run(['git', 'diff', '--staged'], check=False)
 
-        # Stage changes
-        subprocess.run(['git', 'add', '.'], check=True)
+    if not ask_confirm(f"Commit '{message}'?"):
+        subprocess.run(['git', 'reset'], check=False)
+        return
 
-        # Show diff before commit
-        print("\n--- Staged Changes ---")
-        subprocess.run(['git', 'diff', '--staged'], check=False)
-
-        # Ask for confirmation before commit
-        response = input(f"\nCommit with message: '{commit_message}'? (y/N): ")
-        if response.lower() != 'y':
-            print("Cancelled - resetting staging")
-            subprocess.run(['git', 'reset'], check=False)
-            return
-
-        # Commit
-        subprocess.run(['git', 'commit', '-m', commit_message], check=True)
-
-        # Push with error checking
-        result = subprocess.run(['git', 'push', '-u', 'origin', branch], check=False)
-        if result.returncode == 0:
-            print("✓ Push successful")
+    if run_safe(['git', 'commit', '-m', message], "Commit"):
+        if run_safe(['git', 'push', '-u', 'origin', branch], "Push"):
+            print("✓ All done")
         else:
             print("✗ Push failed - commit is local")
-            return
-
-    except subprocess.CalledProcessError as e:
-        print(f"✗ Git command failed: {e}")
-        return
-    except Exception as e:
-        print(f"✗ Error: {e}")
-        return
 
 # ----------------------------
 # Modify $PATH
 # ----------------------------
-for new_path in [
-    '$HOME/.local/bin',
-]:
-    $PATH.insert(0, new_path)
+$PATH.insert(0, '$HOME/.local/bin')
+
+# ----------------------------
+# Xontrib Plugins
+# ----------------------------
+xontrib load uvox
+xontrib load bashisms
+xontrib load readable-traceback
+
+$XONSH_SHOW_TRACEBACK = True
 
 # ----------------------------
 # Custom Prompt
 # ----------------------------
-xontrib load uvox
 $PROMPT_FIELDS['env_name_cust'] = env_name_cust
 $PROMPT_FIELDS['nix_shell_name'] = nix_shell_name
 $PROMPT = (
@@ -264,52 +215,127 @@ $PROMPT = (
 # Aliases
 # ----------------------------
 aliases.update({
-    # NixOS commands
-    'rebuild': 'sudo nixos-rebuild switch --flake ~/Projects/nixos/.#alice',
+    # --- NixOS & System Management ---
+    'rebuild-sys': 'sudo nixos-rebuild switch --flake ~/Projects/nixos/.#alice',
+    'rebuild-hm': 'nix run home-manager -- switch --flake ~/Projects/nixos/.#sasha@alice',
+    'rebuild-all': 'sudo nixos-rebuild switch --flake ~/Projects/nixos/.#alice && nix run home-manager -- switch --flake ~/Projects/nixos/.#sasha@alice',
+    'rebuild': 'nix run home-manager -- switch --flake ~/Projects/nixos/.#sasha@alice',  # Default to HM
     'hm': 'nix run home-manager -- switch --flake ~/Projects/nixos/.#sasha@alice',
 
-    # Common shortcuts
+    # --- Common Shortcuts ---
     'v': 'nvim',
-    'c': 'clear',
+    'e': 'nvim',
 
-    # Modern replacements
+    # ============================================================================
+    # Modern CLI Replacements
+    # ============================================================================
     'ls': 'eza --icons',
     'll': 'eza --icons -l',
     'la': 'eza --icons -a',
     'lla': 'eza --icons -la',
     'cat': 'bat',
+    'top': 'btop',
+    'search': 'rg',
+    'tree': 'tree -I "node_modules|.git|.venv"',
 
-    # Utilities
-    'path_of': 'echo @(pwd())/@($arg0)',
-    'untar': untar,  # Safe extraction with validation
-    'neo': 'fastfetch',
-    'tkill': 'tmux kill-server',
-    'xc': 'xclip -selection c',
+    # ============================================================================
+    # File Manager & Navigation
+    # ============================================================================
+    'fm': 'lf',
+
+    # ============================================================================
+    # Development & Formatting
+    # ============================================================================
+    'fmt': 'nixfmt',
+    'lint-nix': 'statix check',
+    'lint-sh': 'shellcheck',
+    'test': 'bats',
+
+    # ============================================================================
+    # GUI Applications (Quick Access)
+    # ============================================================================
+    # Media & Recording
+    'vlc': 'vlc',
+    'obs': 'obs-studio',
+    'ss': 'flameshot gui',
+
+    # Office & Documents
+    'doc': 'obsidian',
+    'pdf': 'zathura',
+    'draw': 'xournalpp',
+    'study': 'anki',
+
+    # Communication
+    'msg': 'discord',
+
+    # Development IDE
+    'ide': 'vscodium-fhs',
     'code': 'codium',
 
-    # File operations
-    'bak': 'cp @($arg0) @($arg0).bak -r',
+    # ============================================================================
+    # Window Manager & Desktop Tools
+    # ============================================================================
+    'menu': 'rofi -show drun',
+    'emoji': 'rofimoji -a copy',
+    'lock': 'i3lock-fancy',
+    'vm': 'virt-manager',
 
-    # Development (uvox uses uv for faster venv management)
+    # ============================================================================
+    # Media & System Control
+    # ============================================================================
+    'play': 'playerctl play-pause',
+    'playnext': 'playerctl next',
+    'playprev': 'playerctl previous',
+    'vol+': 'pactl set-sink-volume @DEFAULT_SINK@ +5%',
+    'vol-': 'pactl set-sink-volume @DEFAULT_SINK@ -5%',
+    'bright+': 'brightnessctl set +5%',
+    'bright-': 'brightnessctl set 5%-',
+
+    # ============================================================================
+    # System Information & Monitoring
+    # ============================================================================
+    'neo': 'fastfetch',
+    'sysinfo': 'fastfetch',
+
+    # ============================================================================
+    # Utilities & Tools
+    # ============================================================================
+    'path_of': 'echo @(pwd())/@($arg0)',
+    'untar': untar,
+    'tkill': 'tmux kill-server',
+    'xc': 'xclip -selection c',
+    'bak': 'cp @($arg0) @($arg0).bak -r',
+    'decrypt': 'age -d',
+    'encrypt': 'age -e',
+
+    # ============================================================================
+    # Development (Python Virtual Environments with uvox)
+    # ============================================================================
     'mkvenv': 'uvox new venv',
     'vac': 'uvox activate @($arg0)',
     'vdac': 'uvox deactivate',
     'vls': 'uvox list',
 
-    # Git
+    # ============================================================================
+    # Git & Version Control
+    # ============================================================================
     'gup': git_sync,
 
-    # Wallpaper/Display
+    # ============================================================================
+    # Wallpaper & Display Configuration
+    # ============================================================================
     'wp': set_wallpaper,
     'd': set_display,
 
-    # Network
+    # ============================================================================
+    # Network & IP
+    # ============================================================================
     'ipv4': get_local_ip,
 
-    # Web server - Quick HTTP server for local development only
-    # Usage: webup
-    # Access: http://localhost:8080 in browser
-    # Stop: Ctrl+C
+    # ============================================================================
+    # Web Development & Testing
+    # ============================================================================
+    'webup': 'python3 -m http.server 8080',
     # ⚠️  WARNING: MEDIUM RISK - LOCAL DEVELOPMENT ONLY
     # - No authentication, no HTTPS/SSL
     # - Serves all files in current directory
@@ -318,8 +344,68 @@ aliases.update({
     #   - Localhost only: python3 -m http.server 8080 --bind 127.0.0.1
     #   - Specific dir: python3 -m http.server 8080 --directory /tmp/share
     # DO NOT use: On untrusted networks, in directories with sensitive files
-    'webup': 'python3 -m http.server 8080',
 })
+
+# ----------------------------
+# Completion System & Enhancements
+# ----------------------------
+# Custom completers for user-defined functions
+def wallpaper_completer(prefix, line, begidx, endidx, ctx):
+    """Completer for wp (wallpaper) command"""
+    import os
+    wallpaper_dir = os.path.expandvars("$HOME/Pictures/wallpapers")
+
+    # Get all wallpaper files
+    if os.path.exists(wallpaper_dir):
+        try:
+            files = [f for f in os.listdir(wallpaper_dir) if f != 'wallpaper']
+            return set(files)
+        except OSError:
+            pass
+
+    # Also suggest subcommands
+    return {'ls', 'search'}
+
+def display_completer(prefix, line, begidx, endidx, ctx):
+    """Completer for d (display) command"""
+    try:
+        import subprocess
+        result = subprocess.run(['autorandr', '--list'], capture_output=True, text=True, check=False)
+        if result.returncode == 0:
+            profiles = result.stdout.strip().split('\n')
+            return set(p.strip() for p in profiles if p.strip())
+    except Exception:
+        pass
+    return set()
+
+def venv_completer(prefix, line, begidx, endidx, ctx):
+    """Completer for vac (venv activate) command"""
+    try:
+        import subprocess
+        result = subprocess.run(['uvox', 'list'], capture_output=True, text=True, check=False)
+        if result.returncode == 0:
+            venvs = result.stdout.strip().split('\n')
+            return set(v.strip() for v in venvs if v.strip() and not v.startswith('='))
+    except Exception:
+        pass
+    return set()
+
+# Register custom completers
+try:
+    from xonsh.completer import add_one_completer
+    add_one_completer('wp', wallpaper_completer, 'start')
+    add_one_completer('d', display_completer, 'start')
+    add_one_completer('vac', venv_completer, 'start')
+except ImportError:
+    # Fallback for newer xonsh versions with different completer API
+    try:
+        import xonsh.completer.bash_completer as bash_completer
+        bash_completer.COMPLETERS['wp'] = wallpaper_completer
+        bash_completer.COMPLETERS['d'] = display_completer
+        bash_completer.COMPLETERS['vac'] = venv_completer
+    except (ImportError, AttributeError):
+        # If completer registration fails, continue without custom completers
+        pass
 
 # ----------------------------
 # Zoxide Integration

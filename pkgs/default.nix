@@ -22,6 +22,9 @@
 # or home.packages (home-manager/home.nix) unless you need them
 # as standalone buildable/installable units.
 #
-pkgs: {
+pkgs: rec {
   xontrib-uvox = pkgs.callPackage ./xontrib-uvox { inherit (pkgs) uv; };
+  xontrib-bashisms = pkgs.callPackage ./xontrib-bashisms { };
+  python-backtrace = pkgs.callPackage ./python-backtrace { };
+  xontrib-readable-traceback = pkgs.callPackage ./xontrib-readable-traceback { inherit python-backtrace; };
 }
