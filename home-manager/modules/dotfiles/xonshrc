@@ -174,9 +174,13 @@ def get_local_ip():
 # Development Tools
 # ----------------------------
 
-# git_sync: Safe git workflow with confirmation steps
+# git_sync / gup: Safe git workflow with confirmation steps
+# ⚠️  WARNING: Automatically stages ALL changes in current directory (git add .)
 # Usage: gup <branch> <message>
 # Example: gup main "fix typo"
+# Safety: Includes confirmation prompts before staging, committing, and pushing
+# Best practice: Review 'git status' and 'git diff' before confirming
+# For sensitive/production repos: Use individual git commands instead
 def git_sync(args):
     """Safe git sync with confirmation prompts (Option B implementation)"""
     if len(args) < 2:
@@ -261,8 +265,8 @@ $PROMPT = (
 # ----------------------------
 aliases.update({
     # NixOS commands
-    'rebuild': 'sudo nixos-rebuild switch --flake ~/.config/nixos',
-    'hms': 'home-manager switch --flake ~/.config/nixos',
+    'rebuild': 'sudo nixos-rebuild switch --flake ~/Projects/nixos/.#alice',
+    'hm': 'nix run home-manager -- switch --flake ~/Projects/nixos/.#sasha@alice',
 
     # Common shortcuts
     'v': 'nvim',
@@ -302,13 +306,18 @@ aliases.update({
     # Network
     'ipv4': get_local_ip,
 
-    # Web server - MEDIUM RISK: LOCAL DEVELOPMENT ONLY
-    # Current: 'python3 -m http.server 8080'
-    # ⚠️ WARNING: No authentication, no HTTPS/SSL, serves all files in current directory
-    # Safe usage:
+    # Web server - Quick HTTP server for local development only
+    # Usage: webup
+    # Access: http://localhost:8080 in browser
+    # Stop: Ctrl+C
+    # ⚠️  WARNING: MEDIUM RISK - LOCAL DEVELOPMENT ONLY
+    # - No authentication, no HTTPS/SSL
+    # - Serves all files in current directory
+    # - Binds to 0.0.0.0 (accessible from network)
+    # Safe alternatives for specific use:
     #   - Localhost only: python3 -m http.server 8080 --bind 127.0.0.1
-    #   - Specific directory: python3 -m http.server 8080 --directory /tmp/share
-    # DO NOT use on untrusted networks or with sensitive files
+    #   - Specific dir: python3 -m http.server 8080 --directory /tmp/share
+    # DO NOT use: On untrusted networks, in directories with sensitive files
     'webup': 'python3 -m http.server 8080',
 })
 

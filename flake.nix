@@ -76,7 +76,7 @@
               self.overlays.additions
               self.overlays.modifications
               self.overlays.unstable
-            ];
+	    ];
           }
           # Sops-nix for secrets management
           inputs.sops-nix.nixosModules.default
@@ -108,6 +108,8 @@
               self.overlays.modifications
               self.overlays.unstable
             ];
+            # Allow unfree packages (obsidian, etc)
+            nixpkgs.config.allowUnfree = true;
           }
           ./home-manager/home.nix
         ];
