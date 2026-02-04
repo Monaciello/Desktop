@@ -14,6 +14,9 @@ Daily sprint log. Max 80 lines. Rotate weekly.
 | ✓ DONE | Move virt packages (packages.nix:51) | Moved to hosts/alice/services/virt.nix |
 | ✓ DONE | Add fail2ban (security.nix:5) | Configured with incremental banning |
 | ✓ DONE | Require sudo password (security.nix:8) | Already correct - no change needed |
+| ✓ DONE | Neovim LSPs (Phase 1) | nixd/pyright via Nix extraPackages, lspconfig in init.lua |
+| ✓ DONE | Obsidian vault path | Configured ~/Files/Obsidian in obsidian-nvim |
+| ✓ DONE | xonshrc documentation | Enhanced gup/webup alias warnings and usage docs |
 
 ## 2026-01-30
 
@@ -56,15 +59,17 @@ keymap("n", "<C-h>", ":TmuxNavigateLeft<CR>")
 **Decision:** Keep vanilla init.lua approach with declarative LSP management via Nix
 
 **Rationale:**
+- Removed lazy.nvim (dynamic plugin management conflicts with Nix declarativity)
 - Removed Mason (automatic LSP downloads) - now using nixd, pyright via Nix
-- Vanilla Lua is portable, maintainable, and widely understood
-- Declarative LSP binaries in neovim.nix provides reproducibility
-- Lazy.nvim plugin management remains - acceptable for plugins
+- Vanilla Lua + home-manager declarative plugins is reproducible and maintainable
+- Declarative LSP binaries in neovim.nix provides full reproducibility
+- Simpler init.lua (230 lines) without plugin bootstrap code
 - No need for full nixvim typing/configuration complexity
 
 **Changes Implemented:**
+- ✓ Removed lazy.nvim, using home-manager declarative plugin management
 - ✓ Added nixd, pyright to extraPackages in neovim.nix
-- ✓ Configured LSPs via lspconfig before Mason (backup only)
-- ✓ Removed Mason plugins from init.lua
+- ✓ Configured LSPs via lspconfig in clean init.lua
 - ✓ Added clipboard support (vim.opt.clipboard="unnamedplus")
+- ✓ Configured obsidian-nvim vault path (~/Files/Obsidian)
 - ✓ All LSP keybindings documented in docs/keybindings.md
