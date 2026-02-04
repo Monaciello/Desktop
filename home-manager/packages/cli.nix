@@ -21,5 +21,9 @@
     jq
     yq
     tree
+
+    # LSP servers
+    nixd # Nix language server
+    pyright # Python language server
   ];
 }

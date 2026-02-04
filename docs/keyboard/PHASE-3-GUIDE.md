@@ -44,7 +44,7 @@ P → Macro: "+p  (system clipboard paste in nvim)
 - Type: `"+y` (literally the characters: quote, plus, y)
 - Click "Add"
 
-**Note:** This requires `vim.opt.clipboard = "unnamedplus"` in nvim config (TODO from wip.md:33)
+**Note:** ✓ Clipboard is configured with `vim.opt.clipboard = "unnamedplus"` in nvim init.lua (resolved)
 
 ---
 

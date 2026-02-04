@@ -14,7 +14,8 @@
 #   nix develop .#fhs    # enters FHS environment
 #   nix develop .#xonsh  # enters xonsh dev environment
 #
-{pkgs}: {
+{ pkgs }:
+{
   # Bootstrap shell for initial flake setup (legacy nix-shell compatible)
   default = pkgs.mkShell {
     NIX_CONFIG = "experimental-features = nix-command flakes";
@@ -30,7 +31,8 @@
   fhs =
     (pkgs.buildFHSEnv {
       name = "fhs";
-      targetPkgs = pkgs:
+      targetPkgs =
+        pkgs:
         (with pkgs; [
           xonsh # single shell for everything
           pkgsi686Linux.glibc
@@ -41,10 +43,12 @@
           libXcursor
           libXrandr
         ]);
-      multiPkgs = pkgs: (with pkgs; [
-        pkgsi686Linux.glibc
-        pkgsi686Linux.stdenv.cc.cc.lib
-      ]);
+      multiPkgs =
+        pkgs:
+        (with pkgs; [
+          pkgsi686Linux.glibc
+          pkgsi686Linux.stdenv.cc.cc.lib
+        ]);
       runScript = "xonsh";
     }).env;
 }

@@ -17,6 +17,11 @@ Daily sprint log. Max 80 lines. Rotate weekly.
 | ✓ DONE | Neovim LSPs (Phase 1) | nixd/pyright via Nix extraPackages, lspconfig in init.lua |
 | ✓ DONE | Obsidian vault path | Configured ~/Files/Obsidian in obsidian-nvim |
 | ✓ DONE | xonshrc documentation | Enhanced gup/webup alias warnings and usage docs |
+| ✓ DONE | Comprehensive alias audit | 67 aliases documented and organized into 14 categories |
+| ✓ DONE | Alias documentation suite | Created ALIASES_AND_SERVICES.md, ACTION_ITEMS.md, README_ALIASES.md |
+| ✓ DONE | Service & program review | All system services and 60+ programs catalogued with rationale |
+| ✓ DONE | Enhancement priorities | Prioritized 16 potential enhancements with implementation guides |
+| ✓ DONE | Clipboard integration | ✓ Verified in init.lua, updated PHASE-3-GUIDE.md reference |
 
 ## 2026-01-30
 

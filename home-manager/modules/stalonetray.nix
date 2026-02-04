@@ -2,7 +2,8 @@
   config,
   pkgs,
   ...
-}: {
+}:
+{
   home.file.".stalonetrayrc".text = ''
     geometry 1x10
     icon_size 24

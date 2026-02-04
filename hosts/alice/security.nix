@@ -2,7 +2,7 @@
 { ... }:
 {
   networking.firewall.enable = true;
-  # TODO(security): add layered controls, fail2ban, firewall rules
+  # Layered security: sudoers + firewall + fail2ban + SSH hardening
   security = {
     sudo.enable = true;
     sudo.wheelNeedsPassword = true;

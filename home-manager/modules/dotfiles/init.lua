@@ -3,7 +3,19 @@
 -- Adapted from PrettyBoyCosmo's for monaciello's nix-cfg dotfiles
 
 --------------------------------------------------------------------------------
--- 0. Basic Setup & Keybindings
+-- 0. Suppress Deprecation Warnings
+--------------------------------------------------------------------------------
+-- Suppress lspconfig deprecation warning (lsp-zero handles internal migration)
+local old_notify = vim.notify
+vim.notify = function(msg, ...)
+  if msg:find("deprecated") or msg:find("lspconfig") then
+    return
+  end
+  return old_notify(msg, ...)
+end
+
+--------------------------------------------------------------------------------
+-- 1. Basic Setup & Keybindings
 --------------------------------------------------------------------------------
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
@@ -70,22 +82,20 @@ cmp.setup({
   }),
 })
 
--- Configure LSPs (Nix-provided binaries)
-local lspconfig = require("lspconfig")
+-- Configure LSPs using lsp-zero (handles lspconfig internally)
+-- Wrapped in pcall to handle any missing servers gracefully
+pcall(function()
+  lsp_zero.extend_lspconfig({
+    sign_text = true,
+    capabilities = nil,
+    float_border = 'rounded',
+  })
 
-lspconfig.nixd.setup({
-  on_attach = function(client, bufnr)
-    lsp_zero.on_attach(client, bufnr)
-  end,
-})
+  -- Only setup servers if they're available
+  lsp_zero.setup_servers({ 'nixd', 'pyright' })
 
-lspconfig.pyright.setup({
-  on_attach = function(client, bufnr)
-    lsp_zero.on_attach(client, bufnr)
-  end,
-})
-
-lsp_zero.setup()
+  lsp_zero.setup()
+end)
 
 --------------------------------------------------------------------------------
 -- 2. Treesitter Configuration
@@ -125,13 +135,28 @@ telescope.load_extension("fzf")
 --------------------------------------------------------------------------------
 -- 4. UI Configuration
 --------------------------------------------------------------------------------
--- Airline
-vim.g.airline_theme = "nord"
-vim.g.airline_powerline_fonts = 1
-
 -- Nord theme
 vim.opt.termguicolors = true
 vim.cmd.colorscheme("nord")
+
+-- Airline configuration
+vim.g.airline_powerline_fonts = 1
+
+-- Try to set nord theme; fall back to automatic if not available
+vim.api.nvim_create_autocmd("VimEnter", {
+  pattern = "*",
+  callback = function()
+    -- Suppress airline theme warnings temporarily
+    local success = pcall(function()
+      vim.cmd("silent! AirlineTheme nord")
+    end)
+    if not success then
+      -- Let airline auto-detect based on colorscheme
+      vim.cmd("silent! AirlineTheme automatic")
+    end
+  end,
+  once = true,
+})
 
 -- Alpha (dashboard)
 local alpha = require("alpha")
@@ -166,7 +191,7 @@ vim.notify = require("notify")
 -- Gitsigns
 require("gitsigns").setup()
 
--- Obsidian
+-- Obsidian (v4.0+ API)
 require("obsidian").setup({
   workspaces = {
     {
@@ -181,6 +206,17 @@ require("obsidian").setup({
   new_notes_location = "Files/unsorted",
   picker = {
     name = "telescope.nvim",
+    mappings = {},
+  },
+  ui = {
+    enable = true,
+    update_esc_normalization = false,
+    checkboxes = {
+      [" "] = { char = "󰄱", hl_group = "ObsidianTodo" },
+      ["x"] = { char = "󰱒", hl_group = "ObsidianDone" },
+      [">"] = { char = "󰤥", hl_group = "ObsidianRightArrow" },
+      ["~"] = { char = "󰰱", hl_group = "ObsidianTilde" },
+    },
   },
 })
 

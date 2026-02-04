@@ -1,4 +1,5 @@
-{pkgs, inputs, ...}: {
+{ pkgs, inputs, ... }:
+{
   programs.neovim = {
     enable = true;
     defaultEditor = true;
@@ -64,16 +65,14 @@
 
     # LSP servers (declaratively provided)
     extraPackages = with pkgs; [
-      nixd              # Nix language server
-      pyright           # Python language server
-      imagemagick       # For image.nvim
+      nixd # Nix language server
+      pyright # Python language server
+      imagemagick # For image.nvim
     ];
 
-    extraLuaPackages = ps: [ps.magick];
+    extraLuaPackages = ps: [ ps.magick ];
 
-    # Keybindings and settings
-    extraConfig = ''
-      ${builtins.readFile ./dotfiles/init.lua}
-    '';
+    # Lua configuration
+    extraLuaConfig = builtins.readFile ./dotfiles/init.lua;
   };
 }
