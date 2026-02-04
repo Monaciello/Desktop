@@ -307,6 +307,7 @@ aliases.update({
     'bak': 'cp @($arg0) @($arg0).bak -r',
     'decrypt': 'age -d',
     'encrypt': 'age -e',
+    'nm' : 'nmtui'
 
     # ============================================================================
     # Development (Python Virtual Environments with uvox)
