@@ -166,6 +166,24 @@ vim.notify = require("notify")
 -- Gitsigns
 require("gitsigns").setup()
 
+-- Obsidian
+require("obsidian").setup({
+  workspaces = {
+    {
+      name = "Files",
+      path = vim.fn.expand("~/Files/Obsidian"),
+    },
+  },
+  completion = {
+    nvim_cmp = true,
+    min_chars = 1,
+  },
+  new_notes_location = "Files/unsorted",
+  picker = {
+    name = "telescope.nvim",
+  },
+})
+
 --------------------------------------------------------------------------------
 -- 5. Editor Options
 --------------------------------------------------------------------------------
