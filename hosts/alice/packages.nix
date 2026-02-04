@@ -3,7 +3,6 @@
 {
   environment.systemPackages = with pkgs; [
     # Core utilities
-    vim # TODO: remove after neovim fully configured
     wget
     curl
     git
@@ -25,7 +24,6 @@
     numlockx
 
     # Audio/Media
-    pamixer # TODO: audit - may overlap with pipewire tools
     brightnessctl
     playerctl
     pulseaudio
@@ -44,19 +42,15 @@
     xorg.xprop
     xorg.xrandr
 
-    # GTK theming - TODO: consolidate with home-manager/modules/gtk.nix
-    adapta-gtk-theme
-    papirus-icon-theme
-
     # Keyboards
     keymapp # ZSA keyboard configuration GUI
     wally-cli # ZSA firmware flasher
 
-    # Virtualization - TODO: move to hosts/alice/services/virt.nix
-    libvirt
-    qemu
-    spice-vdagent
-    virt-manager
-    virt-viewer
+    # Fallback desktop environment
+    xfce.xfce4-panel
+    xfce.xfce4-settings
+    xfce.xfce4-session
+    xfce.xfce4-terminal
+    xfce.thunar
   ];
 }

@@ -22,10 +22,6 @@ $XONSH_SHOW_TRACEBACK = True
 def pwd():
     return os.getcwd()
 
-def command_output(command):
-    result = subprocess.check_output(command).decode('utf-8')
-    return result.strip()
-
 # ----------------------------
 # System Utilities
 # ----------------------------
@@ -48,28 +44,117 @@ def nix_shell_name():
 # ----------------------------
 # Wallpaper and Display
 # ----------------------------
+
+# set_wallpaper: Safely set wallpaper with path validation
+# Uses subprocess instead of os.system() to prevent command injection
 def set_wallpaper(args):
+    """Safely set wallpaper with path traversal protection"""
     if not args:
         print("Usage: set_wallpaper <option> or <wallpaper_name>")
         return None
+
     option = args[0]
     if option == "ls":
-        os.system(f'eza --icons {WALLPAPER_DIR}')
+        try:
+            subprocess.run(['eza', '--icons', WALLPAPER_DIR], check=True)
+        except subprocess.CalledProcessError:
+            print("Failed to list wallpapers")
         return None
+
     wallpaper = option
+    wallpaper_path = None
+
+    # Search for wallpaper in directory
     for root, dirs, files in os.walk(WALLPAPER_DIR):
         for file in files:
             name, ext = os.path.splitext(file)
             if name == wallpaper or file == wallpaper:
-                os.system(f'cp "{os.path.join(WALLPAPER_DIR, file)}" "{os.path.join(WALLPAPER_DIR, "wallpaper")}"')
-                os.system('i3 restart')
-                return None
-    print(f"Error: Wallpaper '{wallpaper}' not found in {WALLPAPER_DIR}")
+                full_path = os.path.join(root, file)
+
+                # Security: Prevent path traversal attacks
+                try:
+                    if not os.path.abspath(full_path).startswith(os.path.abspath(WALLPAPER_DIR)):
+                        print("Error: Path traversal detected")
+                        return None
+                except (ValueError, OSError):
+                    print("Error: Invalid path")
+                    return None
+
+                wallpaper_path = full_path
+                break
+        if wallpaper_path:
+            break
+
+    if not wallpaper_path:
+        print(f"Error: Wallpaper '{wallpaper}' not found in {WALLPAPER_DIR}")
+        return None
+
+    # Copy wallpaper using subprocess (safer than os.system)
+    try:
+        dest = os.path.join(WALLPAPER_DIR, 'wallpaper')
+        subprocess.run(['cp', wallpaper_path, dest], check=True)
+        subprocess.run(['i3', 'restart'], check=True)
+        print(f"✓ Wallpaper changed to {wallpaper}")
+    except subprocess.CalledProcessError as e:
+        print(f"✗ Error: {e}")
+        return None
+
     return None
 
-def set_display(mode):
-    os.system(f'autorandr -l {mode[0]}')
-    os.system('i3 restart')
+# untar: Safely extract tar archives with validation
+def untar(args):
+    """Safely extract tar archives with filename validation"""
+    if not args:
+        print("Usage: untar <file.tar.xz|tar.gz|tar.bz2|tar>")
+        return None
+
+    filename = args[0]
+
+    # Validate file extension
+    if not filename.endswith(('.tar.xz', '.tar.gz', '.tar.bz2', '.tar')):
+        print("Error: Not a valid tar archive (use .tar, .tar.gz, .tar.bz2, or .tar.xz)")
+        return None
+
+    # Validate file exists
+    if not os.path.exists(filename):
+        print(f"Error: File not found: {filename}")
+        return None
+
+    # Extract safely using subprocess
+    try:
+        subprocess.run(['tar', '-xf', filename], check=True)
+        print(f"✓ Extracted {filename}")
+    except subprocess.CalledProcessError as e:
+        print(f"✗ Error extracting {filename}: {e}")
+        return None
+
+    return None
+
+# set_display: Safely change display configuration with input validation
+# Uses subprocess instead of os.system() and validates profile names
+import re
+
+def set_display(args):
+    """Safely change display configuration with input validation"""
+    if not args:
+        print("Usage: set_display <profile>")
+        return None
+
+    profile = args[0]
+
+    # Validate profile name (alphanumeric, hyphens, underscores only)
+    if not re.match(r'^[a-zA-Z0-9_-]+$', profile):
+        print(f"Error: Invalid profile name '{profile}' - use alphanumeric, hyphens, underscores only")
+        return None
+
+    try:
+        subprocess.run(['autorandr', '-l', profile], check=True)
+        subprocess.run(['i3', 'restart'], check=True)
+        print(f"✓ Display profile changed to {profile}")
+    except subprocess.CalledProcessError as e:
+        print(f"✗ Error: {e}")
+        return None
+
     return None
 
 # ----------------------------
@@ -88,15 +173,67 @@ def get_local_ip():
 # ----------------------------
 # Development Tools
 # ----------------------------
+
+# git_sync: Safe git workflow with confirmation steps
+# Usage: gup <branch> <message>
+# Example: gup main "fix typo"
 def git_sync(args):
+    """Safe git sync with confirmation prompts (Option B implementation)"""
+    if len(args) < 2:
+        print("Usage: gup <branch> <message>")
+        return
+
     branch = args[0]
     commit_message = args[1]
-    os.system('cd .')
-    os.system('git fetch')
-    os.system(f'git pull origin {branch}')
-    os.system('git add .')
-    os.system(f'git commit -m "{commit_message}"')
-    os.system(f'git push -u origin {branch}')
+
+    try:
+        # Fetch updates
+        subprocess.run(['git', 'fetch'], check=True)
+
+        # Pull from origin
+        subprocess.run(['git', 'pull', 'origin', branch], check=True)
+
+        # Show current status
+        print("\n--- Git Status ---")
+        subprocess.run(['git', 'status', '--short'], check=False)
+
+        # Ask for confirmation before staging
+        response = input("\nStage all changes? (y/N): ")
+        if response.lower() != 'y':
+            print("Cancelled")
+            return
+
+        # Stage changes
+        subprocess.run(['git', 'add', '.'], check=True)
+
+        # Show diff before commit
+        print("\n--- Staged Changes ---")
+        subprocess.run(['git', 'diff', '--staged'], check=False)
+
+        # Ask for confirmation before commit
+        response = input(f"\nCommit with message: '{commit_message}'? (y/N): ")
+        if response.lower() != 'y':
+            print("Cancelled - resetting staging")
+            subprocess.run(['git', 'reset'], check=False)
+            return
+
+        # Commit
+        subprocess.run(['git', 'commit', '-m', commit_message], check=True)
+
+        # Push with error checking
+        result = subprocess.run(['git', 'push', '-u', 'origin', branch], check=False)
+        if result.returncode == 0:
+            print("✓ Push successful")
+        else:
+            print("✗ Push failed - commit is local")
+            return
+
+    except subprocess.CalledProcessError as e:
+        print(f"✗ Git command failed: {e}")
+        return
+    except Exception as e:
+        print(f"✗ Error: {e}")
+        return
 
 # ----------------------------
 # Modify $PATH
@@ -140,7 +277,7 @@ aliases.update({
 
     # Utilities
     'path_of': 'echo @(pwd())/@($arg0)',
-    'untar': 'tar -xf *.tar.xz',
+    'untar': untar,  # Safe extraction with validation
     'neo': 'fastfetch',
     'tkill': 'tmux kill-server',
     'xc': 'xclip -selection c',
@@ -165,7 +302,13 @@ aliases.update({
     # Network
     'ipv4': get_local_ip,
 
-    # Web server
+    # Web server - MEDIUM RISK: LOCAL DEVELOPMENT ONLY
+    # Current: 'python3 -m http.server 8080'
+    # ⚠️ WARNING: No authentication, no HTTPS/SSL, serves all files in current directory
+    # Safe usage:
+    #   - Localhost only: python3 -m http.server 8080 --bind 127.0.0.1
+    #   - Specific directory: python3 -m http.server 8080 --directory /tmp/share
+    # DO NOT use on untrusted networks or with sensitive files
     'webup': 'python3 -m http.server 8080',
 })
 

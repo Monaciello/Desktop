@@ -63,19 +63,38 @@ Programs with configurable keybindings in this config.
 
 **Leader:** `Space`
 
+### Editor & Navigation
+
 | Binding | Action |
 |---------|--------|
-| `<leader>ff` | Find files |
-| `<leader>fg` | Live grep |
-| `<leader>fb` | Buffers |
+| `<leader>ff` | Find files (Telescope) |
+| `<leader>fg` | Live grep (Telescope) |
+| `<leader>fb` | Buffers (Telescope) |
 | `<leader>e` | File explorer |
+| `<C-h/j/k/l>` | Navigate splits (tmux-aware) |
+
+### LSP (Language Server Protocol)
+
+**Available LSPs:** nixd (Nix), pyright (Python)
+
+| Binding | Action |
+|---------|--------|
 | `gd` | Go to definition |
-| `gr` | References |
-| `K` | Hover docs |
-| `<leader>ca` | Code actions |
-| `<leader>rn` | Rename |
+| `K` | Hover documentation |
+| `<leader>rn` | Rename symbol |
+| `<leader>vca` | Code actions |
+| `<leader>vws` | Workspace symbols |
+| `<leader>vd` | Open diagnostics |
 | `[d` / `]d` | Prev/next diagnostic |
-| `<C-h/j/k/l>` | Navigate splits |
+| `<leader>vrr` | References |
+
+### System Integration
+
+| Action | Key | Notes |
+|--------|-----|-------|
+| Yank to clipboard | `y` (visual mode) | Uses system clipboard via xclip |
+| Paste from clipboard | `p` | Integrates with system clipboard |
+| **Configuration:** | `vim.opt.clipboard = "unnamedplus"` | System clipboard enabled |
 
 ## Kitty
 

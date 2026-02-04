@@ -4,14 +4,16 @@ Daily sprint log. Max 80 lines. Rotate weekly.
 
 ## Active TODOs
 
-| Tag | File | Item |
-|-----|------|------|
-| TODO | packages.nix:6 | remove vim after neovim configured |
-| TODO | packages.nix:28 | audit pamixer overlap |
-| TODO | packages.nix:47 | consolidate GTK |
-| TODO | packages.nix:51 | move virt pkgs |
-| TODO | security.nix:5 | add fail2ban |
-| FIXME | security.nix:8 | require sudo password |
+**All items completed as of 2026-02-04:**
+
+| Status | Item | Resolution |
+|--------|------|------------|
+| ✓ DONE | Remove vim (packages.nix:6) | Removed - neovim fully configured |
+| ✓ DONE | Audit pamixer (packages.nix:28) | Removed - unused, pactl handles volume |
+| ✓ DONE | Consolidate GTK (packages.nix:47) | Removed - managed by home-manager/modules/gtk.nix |
+| ✓ DONE | Move virt packages (packages.nix:51) | Moved to hosts/alice/services/virt.nix |
+| ✓ DONE | Add fail2ban (security.nix:5) | Configured with incremental banning |
+| ✓ DONE | Require sudo password (security.nix:8) | Already correct - no change needed |
 
 ## 2026-01-30
 
@@ -38,29 +40,31 @@ keymap("n", "<C-h>", ":TmuxNavigateLeft<CR>")
 
 ---
 
-## Gaps
+## Gaps (Resolved)
 
-| Item | Impact | Fix |
-|------|--------|-----|
-| nvim clipboard | Med | vim.opt.clipboard="unnamedplus" |
-| fzf unused | Med | Add xonsh/nvim keybinds |
-| impure nvim | High | Migrate to nixvim (priority #1) |
+| Item | Status | Resolution |
+|------|--------|------------|
+| nvim clipboard | ✓ FIXED | Added vim.opt.clipboard="unnamedplus" to init.lua |
+| impure nvim | ✓ IMPROVED | nixd + pyright LSPs via Nix; removed Mason |
+| xonsh security | ✓ FIXED | Rewrote gup, set_wallpaper, set_display; added untar function |
+| fzf unused | DEFERRED | Telescope covers fuzzy finding needs in nvim |
 
 ---
 
-## Nixvim Decision (HIGH IMPACT)
+## Nixvim Decision (RESOLVED)
 
-Migrate init.lua (624 lines, impure lazy.nvim+Mason) → nixvim (typed, reproducible)?
+**Decision:** Keep vanilla init.lua approach with declarative LSP management via Nix
 
-**Options:**
-- A) Import as flake input → overlay
-- B) Merge into home-manager/modules/neovim.nix ← **Recommended**
-- C) Keep separate, symlink output
+**Rationale:**
+- Removed Mason (automatic LSP downloads) - now using nixd, pyright via Nix
+- Vanilla Lua is portable, maintainable, and widely understood
+- Declarative LSP binaries in neovim.nix provides reproducibility
+- Lazy.nvim plugin management remains - acceptable for plugins
+- No need for full nixvim typing/configuration complexity
 
-**Priority Matrix:**
-- nixvim LSP + remove Mason: High impact, Med effort
-- Typed plugin configs: Med impact, High effort
-- sudo.wheelNeedsPassword: High impact, Low effort ← Do first
-- fail2ban: Med impact, Low effort
-
-**Next:** Decide A/B/C, then migrate LSP config.
+**Changes Implemented:**
+- ✓ Added nixd, pyright to extraPackages in neovim.nix
+- ✓ Configured LSPs via lspconfig before Mason (backup only)
+- ✓ Removed Mason plugins from init.lua
+- ✓ Added clipboard support (vim.opt.clipboard="unnamedplus")
+- ✓ All LSP keybindings documented in docs/keybindings.md

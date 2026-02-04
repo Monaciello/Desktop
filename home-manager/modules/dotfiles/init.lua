@@ -70,8 +70,6 @@ local plugins = {
   { "epwalsh/obsidian.nvim", dependencies = { "nvim-lua/plenary.nvim" } },
 
   -- lsp-zero
-  { "williamboman/mason.nvim" },
-  { "williamboman/mason-lspconfig.nvim" },
   {
     "VonHeikemen/lsp-zero.nvim",
     branch = "v3.x",
@@ -347,11 +345,20 @@ lsp_zero.set_preferences({
   }
 })
 lsp_zero.setup()
-require("mason").setup({})
-require("mason-lspconfig").setup({
-  handlers = {
-    lsp_zero.default_setup
-  }
+
+-- Setup Nix-provided LSPs explicitly
+local lspconfig = require('lspconfig')
+
+lspconfig.nixd.setup({
+  on_attach = function(client, bufnr)
+    lsp_zero.on_attach(client, bufnr)
+  end,
+})
+
+lspconfig.pyright.setup({
+  on_attach = function(client, bufnr)
+    lsp_zero.on_attach(client, bufnr)
+  end,
 })
 
 -- 3.7 image.nvim
@@ -621,3 +628,6 @@ vim.opt.foldlevel = 99
 
 -- Completion
 vim.opt.completeopt = { "menu", "menuone", "noselect" }
+
+-- Clipboard - use system clipboard
+vim.opt.clipboard = "unnamedplus"

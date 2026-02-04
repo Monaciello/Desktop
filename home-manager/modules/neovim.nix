@@ -4,6 +4,13 @@
   programs.neovim = {
     enable = true;
     extraLuaPackages = ps: [ps.magick];
-    extraPackages = [pkgs.imagemagick];
+    extraPackages = with pkgs; [
+      # Image support
+      imagemagick
+
+      # LSP servers (declarative via Nix)
+      nixd          # Nix language server
+      pyright       # Python language server
+    ];
   };
 }
