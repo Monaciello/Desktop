@@ -26,5 +26,7 @@ pkgs: rec {
   xontrib-uvox = pkgs.callPackage ./xontrib-uvox { inherit (pkgs) uv; };
   xontrib-bashisms = pkgs.callPackage ./xontrib-bashisms { };
   python-backtrace = pkgs.callPackage ./python-backtrace { };
-  xontrib-readable-traceback = pkgs.callPackage ./xontrib-readable-traceback { inherit python-backtrace; };
+  xontrib-readable-traceback = pkgs.callPackage ./xontrib-readable-traceback {
+    inherit python-backtrace;
+  };
 }

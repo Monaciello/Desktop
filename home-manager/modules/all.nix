@@ -1,4 +1,5 @@
 # Import all home-manager modules
+{ ... }:
 {
   imports = [
     # Theme & Colors (colors defined in gtk.nix)

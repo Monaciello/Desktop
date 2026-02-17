@@ -39,7 +39,7 @@
       open = ''
         case $(${pkgs.file}/bin/file --mime-type "$f" -bL) in
           text/*) $EDITOR "$f" ;;
-          image/*) sxiv "$f" ;;
+          image/*) feh "$f" ;;
           video/*) mpv "$f" ;;
           application/pdf) zathura "$f" ;;
           *) xdg-open "$f" ;;
@@ -74,8 +74,6 @@
 
   home.packages = with pkgs; [
     dragon-drop
-    bat
     glow
-    jq
   ];
 }

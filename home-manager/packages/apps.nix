@@ -18,8 +18,11 @@
 
     # Communication
     discord
+    telegram-desktop
 
-    # Development
-    vscodium-fhs
+    # Desktop tools
+    rofimoji
+
   ];
+  programs.firefox.enable = true;
 }

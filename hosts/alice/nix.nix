@@ -1,5 +1,10 @@
 # Nix and nixpkgs settings
-{ config, lib, inputs, ... }:
+{
+  config,
+  lib,
+  inputs,
+  ...
+}:
 let
   flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
 in

@@ -17,8 +17,5 @@
     # Nix tools
     nixfmt
     statix
-
-    # Neovim dependencies
-    imagemagick
   ];
 }

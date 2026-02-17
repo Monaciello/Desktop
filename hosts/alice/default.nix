@@ -11,6 +11,7 @@
     ./locale.nix
     ./packages.nix
     ./fonts.nix
+    ./1password.nix
     ./desktop
     ./hardware
     ./services

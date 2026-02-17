@@ -1,0 +1,10 @@
+keys:
+  - &alice age14ra00c9gm55ykdgwa2w7lr7kk0ukw27tx3z8crmyes0vqkxxy4eqwqm8m2
+  - &main age1nf0h3erlguryw7nd4pcj7phl0cznq8fdgcwtmuev7ul0qs7vressntu8ep
+
+creation_rules:
+  - path_regex: hosts/alice/secrets\.yaml$
+    key_groups:
+      - age:
+          - *alice
+          - *main

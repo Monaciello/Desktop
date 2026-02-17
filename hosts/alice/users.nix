@@ -1,5 +1,5 @@
 # User definitions
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 let
   xonsh = pkgs.xonsh.override {
     extraPackages = ps: [
@@ -14,7 +14,7 @@ in
     uid = 1000;
     isNormalUser = true;
     description = "sasha";
-    hashedPassword = "$6$D310RvwPyv5ZIocG$eG83A0Dt7bRdHMrRK29wk8PEFLcLw5dTnC1N0b8/ODKHc.UmbMlaQE///o4SUHB3vQ4wrKx/L5IkiU6YFzrw01";
+    hashedPasswordFile = config.sops.secrets."user-password".path;
     extraGroups = [
       "networkmanager"
       "wheel"

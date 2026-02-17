@@ -1,4 +1,4 @@
-{ pkgs, inputs, ... }:
+{ pkgs, ... }:
 {
   programs.neovim = {
     enable = true;
@@ -15,8 +15,18 @@
       nvim-web-devicons
 
       # Treesitter for syntax
-      nvim-treesitter
-      nvim-treesitter-refactor
+      (nvim-treesitter.withPlugins (p: [
+        p.nix
+        p.python
+        p.rust
+        p.lua
+        p.markdown
+        p.bash
+        p.json
+        p.toml
+        p.yaml
+      ]))
+      # nvim-treesitter-refactor
 
       # Fuzzy finder
       telescope-nvim
@@ -24,7 +34,6 @@
 
       # LSP
       nvim-lspconfig
-      lsp-zero-nvim
       cmp-nvim-lsp
       cmp-buffer
       cmp-path
@@ -63,7 +72,7 @@
       vim-commentary
     ];
 
-    # LSP servers (declaratively provided)
+    # LSP servers + runtime dependencies
     extraPackages = with pkgs; [
       nixd # Nix language server
       pyright # Python language server

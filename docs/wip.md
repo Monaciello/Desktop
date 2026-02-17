@@ -4,77 +4,82 @@ Daily sprint log. Max 80 lines. Rotate weekly.
 
 ## Active TODOs
 
-**All items completed as of 2026-02-04:**
+**Phase 6: Skarabox migration - 2026-02-10**
 
-| Status | Item | Resolution |
-|--------|------|------------|
-| ✓ DONE | Remove vim (packages.nix:6) | Removed - neovim fully configured |
-| ✓ DONE | Audit pamixer (packages.nix:28) | Removed - unused, pactl handles volume |
-| ✓ DONE | Consolidate GTK (packages.nix:47) | Removed - managed by home-manager/modules/gtk.nix |
-| ✓ DONE | Move virt packages (packages.nix:51) | Moved to hosts/alice/services/virt.nix |
-| ✓ DONE | Add fail2ban (security.nix:5) | Configured with incremental banning |
-| ✓ DONE | Require sudo password (security.nix:8) | Already correct - no change needed |
-| ✓ DONE | Neovim LSPs (Phase 1) | nixd/pyright via Nix extraPackages, lspconfig in init.lua |
-| ✓ DONE | Obsidian vault path | Configured ~/Files/Obsidian in obsidian-nvim |
-| ✓ DONE | xonshrc documentation | Enhanced gup/webup alias warnings and usage docs |
-| ✓ DONE | Comprehensive alias audit | 67 aliases documented and organized into 14 categories |
-| ✓ DONE | Alias documentation suite | Created ALIASES_AND_SERVICES.md, ACTION_ITEMS.md, README_ALIASES.md |
-| ✓ DONE | Service & program review | All system services and 60+ programs catalogued with rationale |
-| ✓ DONE | Enhancement priorities | Prioritized 16 potential enhancements with implementation guides |
-| ✓ DONE | Clipboard integration | ✓ Verified in init.lua, updated PHASE-3-GUIDE.md reference |
+| Status | Item | Where |
+|--------|------|-------|
+| DONE | Full codebase audit | — |
+| DONE | Pass nix flake check + nixfmt | — |
+| DONE | **1. Add flake-parts, wrap outputs** | skarabox/migration.md |
+| DONE | **2. Set up SOPS dual-key** | skarabox/migration.md |
+| DONE | **3. Populate secrets + move hashedPassword** | skarabox/migration.md |
+| N/A | **4. Generate host metadata** | skarabox-host only, not alice |
+| N/A | **5. Add nixos-facter** | skarabox-host only, not alice |
+| DONE | **6. Drop standalone homeConfigurations** | skarabox/migration.md |
+| DONE | Enable inputs + deploy-rs | skarabox/migration.md |
+| DONE | Remove redundant nixos-facter-modules input | skarabox/migration.md |
+| TODO | Add first skarabox server host | skarabox/setup-instructions.md |
 
-## 2026-01-30
+**Phase 7: Pre-deployment config review - 2026-02-14**
 
-| Task | Duration | Status |
-|------|----------|--------|
-| docs consolidation, options-audit, nixvim review | 8h | done |
+| Status | Item | Where |
+|--------|------|-------|
+| TODO | Review i3 + i3blocks config | home-manager/modules/i3*.nix |
+| TODO | Review tmux config | home-manager/modules/dotfiles/ |
+| TODO | Review neovim (init.lua) | home-manager/modules/dotfiles/init.lua |
+| TODO | Review picom config | home-manager/modules/picom.nix |
+| TODO | Review xonshrc | home-manager/modules/dotfiles/xonshrc |
+| TODO | Audit keybindings across all programs | — |
+| TODO | Define VLAN topology (MGMT/PUBLIC/PRIVATE) | docs/skarabox-deployment-guide.md#Section-4 |
+| TODO | Design roles/services/networking per host | modules/roles/ |
 
----
+**Phase 8: Skarabox NUC deployment - From deployment guide**
+
+| Status | Item | Reference |
+|--------|------|-----------|
+| TODO | 1. Design trust zones (whiteboard) | Vol3 §13 step 1 |
+| TODO | 2. Generate host entry for NUC | Vol3 §13 step 3 |
+| TODO | 3. Write custom modules (Vol 1-2 types) | Vol3 §13 step 5 |
+| TODO | 4. Write role modules (SHB + custom) | Vol3 §13 step 6 |
+| TODO | 5. Create SOPS secrets for NUC | Vol3 §13 step 7 |
+| TODO | 6. Build beacon ISO | Vol3 §13 step 8 |
+| TODO | 7. Test in VM | Vol3 §13 step 9 |
+| TODO | 8. Flash beacon to USB, boot target | Vol3 §13 step 10 |
+| TODO | 9. Install NixOS on target | Vol3 §13 step 11 |
+| TODO | 10. Unlock encrypted root | Vol3 §13 step 12 |
+| TODO | 11. Deploy full config | Vol3 §13 step 13 |
+| TODO | 12. Verify SHB services | Vol3 §13 step 14 |
+| TODO | 13. Verify custom monitoring | Vol3 §13 step 15 |
+| TODO | 14. Test backup + restore | Vol3 §13 step 16 |
+| TODO | 15. Test full recovery (wipe + reinstall) | Vol3 §13 step 17 |
+
+## Reference Docs (converted 2026-02-14)
+
+- `docs/nix-types-vol2-extended-recipes.md` — DNS, backups, cron/timers, certs, diagnostics
+- `docs/nix-types-networking-reference.md` — Type system reference for infrastructure
+- `docs/skarabox-deployment-guide.md` — Complete deployment guide (18-step checklist)
+
+## Applied Fixes (2026-02-06)
+
+- Commented out unused flake inputs (nixos-generators, nixos-anywhere, flake-parts)
+- Fixed nixfmt → nixfmt-rfc-style (flake.nix + dev.nix)
+- Deleted nixpkgs.nix (dead code)
+- Fixed shells/default.nix comment (2 shells, not 4)
+- Removed unused inputs from 8 modules + gtk.nix + neovim.nix
+- Fixed all.nix missing function signature
+- Created colors.nix (Catppuccin Mocha) — wired into kitty, gtk, stalonetray
+- Added rofimoji to apps.nix
+- Fixed xonsh: --oneline typo, nm→wifi, ip→myip, d→disp
+- Removed dead jetbrains-mono comment from fonts.nix
 
 ## Integration Patterns
 
 **Terminal**: kitty→tmux→nvim via vim-tmux-navigator (C-h/j/k/l)
-```lua
--- init.lua:534-538, tmux.nix:31-35
-keymap("n", "<C-h>", ":TmuxNavigateLeft<CR>")
-```
 
-**Clipboard**: tmux `y` → xclip (tmux.nix:55), xonsh `xc` alias (xonshrc:146)
-- **GAP**: nvim missing `vim.opt.clipboard = "unnamedplus"`
+**Clipboard**: tmux `y` → xclip, xonsh `xc` alias, nvim `clipboard=unnamedplus`
 
 **Launcher**: i3 → Alt+s (rofi/apps), Alt+c (rofimoji)
 
-**Dev**: nvim telescope (C-o find files), harpoon (leader+m menu), obsidian (Win+o, A-i template)
+**Dev**: nvim telescope (C-o find files), harpoon (leader+m menu), obsidian (Win+o)
 
----
-
-## Gaps (Resolved)
-
-| Item | Status | Resolution |
-|------|--------|------------|
-| nvim clipboard | ✓ FIXED | Added vim.opt.clipboard="unnamedplus" to init.lua |
-| impure nvim | ✓ IMPROVED | nixd + pyright LSPs via Nix; removed Mason |
-| xonsh security | ✓ FIXED | Rewrote gup, set_wallpaper, set_display; added untar function |
-| fzf unused | DEFERRED | Telescope covers fuzzy finding needs in nvim |
-
----
-
-## Nixvim Decision (RESOLVED)
-
-**Decision:** Keep vanilla init.lua approach with declarative LSP management via Nix
-
-**Rationale:**
-- Removed lazy.nvim (dynamic plugin management conflicts with Nix declarativity)
-- Removed Mason (automatic LSP downloads) - now using nixd, pyright via Nix
-- Vanilla Lua + home-manager declarative plugins is reproducible and maintainable
-- Declarative LSP binaries in neovim.nix provides full reproducibility
-- Simpler init.lua (230 lines) without plugin bootstrap code
-- No need for full nixvim typing/configuration complexity
-
-**Changes Implemented:**
-- ✓ Removed lazy.nvim, using home-manager declarative plugin management
-- ✓ Added nixd, pyright to extraPackages in neovim.nix
-- ✓ Configured LSPs via lspconfig in clean init.lua
-- ✓ Added clipboard support (vim.opt.clipboard="unnamedplus")
-- ✓ Configured obsidian-nvim vault path (~/Files/Obsidian)
-- ✓ All LSP keybindings documented in docs/keybindings.md
+**Theme**: Catppuccin Mocha via `home-manager/modules/colors.nix`

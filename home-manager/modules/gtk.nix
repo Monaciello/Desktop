@@ -1,44 +1,30 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 let
-  # Nord-inspired color palette - customize here for system-wide theming
-  colors = {
-    base00 = "#2e3440"; # Background
-    base01 = "#3b4252"; # Alt background
-    base02 = "#434c5e"; # Selection
-    base03 = "#4c566a"; # Comments
-    base04 = "#d8dee9"; # Alt foreground
-    base05 = "#eceff4"; # Foreground
-    base06 = "#8fbcbb"; # Diff add
-    base07 = "#88c0d0"; # Diff remove
+  colors = import ./colors.nix;
 
-    # Accent colors
-    red = "#bf616a";
-    green = "#a3be8c";
-    yellow = "#ebcb8b";
-    orange = "#d08770";
-    blue = "#81a1c1";
-    purple = "#b48ead";
-    cyan = "#8fbcbb";
-  };
-
-  # Generate gtk.css from Nix color palette
+  # Generate gtk.css from Catppuccin Mocha palette
   gtkCss = pkgs.writeText "gtk.css" ''
-    @define-color base00 ${colors.base00};
-    @define-color base01 ${colors.base01};
-    @define-color base02 ${colors.base02};
-    @define-color base03 ${colors.base03};
-    @define-color base04 ${colors.base04};
-    @define-color base05 ${colors.base05};
-    @define-color base06 ${colors.base06};
-    @define-color base07 ${colors.base07};
+    @define-color base ${colors.base};
+    @define-color mantle ${colors.mantle};
+    @define-color crust ${colors.crust};
+    @define-color surface0 ${colors.surface0};
+    @define-color surface1 ${colors.surface1};
+    @define-color surface2 ${colors.surface2};
+    @define-color overlay0 ${colors.overlay0};
+    @define-color overlay1 ${colors.overlay1};
+    @define-color text ${colors.text};
+    @define-color subtext0 ${colors.subtext0};
+    @define-color subtext1 ${colors.subtext1};
 
     @define-color red ${colors.red};
     @define-color green ${colors.green};
     @define-color yellow ${colors.yellow};
-    @define-color orange ${colors.orange};
+    @define-color peach ${colors.peach};
     @define-color blue ${colors.blue};
-    @define-color purple ${colors.purple};
-    @define-color cyan ${colors.cyan};
+    @define-color mauve ${colors.mauve};
+    @define-color teal ${colors.teal};
+    @define-color pink ${colors.pink};
+    @define-color lavender ${colors.lavender};
 
     @define-color accent ${colors.blue};
     @define-color accent-danger ${colors.red};
@@ -47,40 +33,40 @@ let
 
     /* Window and general background */
     window {
-      background-color: @base00;
-      color: @base05;
+      background-color: @base;
+      color: @text;
     }
 
     /* Header bars and title bars */
     headerbar,
     .titlebar {
-      background-color: @base01;
-      color: @base05;
-      border-color: @base02;
+      background-color: @mantle;
+      color: @text;
+      border-color: @surface0;
     }
 
     /* Buttons */
     button {
       background-image: none;
-      background-color: @base02;
-      color: @base05;
-      border: 1px solid @base03;
+      background-color: @surface0;
+      color: @text;
+      border: 1px solid @surface1;
     }
 
     button:hover {
-      background-color: @base03;
+      background-color: @surface1;
     }
 
     button:active {
       background-color: @accent;
-      color: @base00;
+      color: @base;
     }
 
     /* Text entries */
     entry {
-      background-color: @base01;
-      color: @base05;
-      border: 1px solid @base03;
+      background-color: @mantle;
+      color: @text;
+      border: 1px solid @surface1;
       padding: 4px;
     }
 
@@ -90,25 +76,25 @@ let
 
     /* Scrollbars */
     scrollbar slider {
-      background-color: @base03;
+      background-color: @surface1;
       border-radius: 4px;
     }
 
     scrollbar slider:hover {
-      background-color: @base04;
+      background-color: @surface2;
     }
 
     /* Selection */
     selection {
       background-color: @accent;
-      color: @base00;
+      color: @base;
     }
 
     /* Tooltips */
     tooltip {
-      background-color: @base02;
-      color: @base05;
-      border: 1px solid @base03;
+      background-color: @surface0;
+      color: @text;
+      border: 1px solid @surface1;
     }
   '';
 in

@@ -17,5 +17,4 @@
     defaultSession = "none+i3";
   };
 
-  programs.firefox.enable = true;
 }

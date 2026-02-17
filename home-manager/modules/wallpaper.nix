@@ -1,10 +1,3 @@
-# Declarative wallpaper management via Home Manager
-# Wallpapers are placed in ~/.background-image
-# i3 uses feh to set the wallpaper from this file
-# To set a wallpaper:
-#   1. Place your wallpaper file in ~/Pictures/wallpapers/
-#   2. Use 'wp <name>' alias to set it as active
-#   3. Or directly symlink: ln -s ~/Pictures/wallpapers/your-wallpaper ~/.background-image
 { ... }:
 {
   # Create wallpapers directory for user to add custom wallpapers

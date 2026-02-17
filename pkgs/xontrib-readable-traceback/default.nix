@@ -16,10 +16,12 @@ python3.pkgs.buildPythonPackage rec {
     sha256 = "sha256-ek+GTWGUpm2b6lBw/7n4W46W2R0Gy6JxqWoLuQilCXQ=";
   };
 
-  propagatedBuildInputs = (with python3.pkgs; [
-    xonsh
-    colorama
-  ]) ++ [ python-backtrace ];
+  propagatedBuildInputs =
+    (with python3.pkgs; [
+      xonsh
+      colorama
+    ])
+    ++ [ python-backtrace ];
 
   doCheck = false;
 

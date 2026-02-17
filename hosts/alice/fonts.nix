@@ -8,6 +8,5 @@
     font-awesome
     powerline-fonts
     powerline-symbols
-    jetbrains-mono
   ];
 }

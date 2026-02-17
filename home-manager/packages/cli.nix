@@ -2,8 +2,6 @@
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
-    # File manager
-    lf
 
     # Terminal (kitty managed by programs.kitty in modules/kitty.nix)
     tmux
@@ -22,8 +20,5 @@
     yq
     tree
 
-    # LSP servers
-    nixd # Nix language server
-    pyright # Python language server
   ];
 }

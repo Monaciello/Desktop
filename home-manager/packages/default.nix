@@ -5,5 +5,7 @@
     ./cli.nix
     ./apps.nix
     ./dev.nix
+    ./vscodium.nix
+    ./cursor.nix
   ];
 }

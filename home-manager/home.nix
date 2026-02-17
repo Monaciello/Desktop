@@ -7,6 +7,9 @@
     ./programs
   ];
 
+  # Allow unfree packages (like Obsidian, VSCodium extensions, etc.)
+  nixpkgs.config.allowUnfree = true;
+
   home = {
     username = "sasha";
     homeDirectory = "/home/sasha";

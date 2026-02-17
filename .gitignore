@@ -6,6 +6,11 @@ result-*
 # SOPS personal keys (not the encrypted secrets)
 !~/.config/sops/age/key*.txt
 hosts/*/*_key
+# skarabox reads personal age key via this symlink — never commit
+sops.key
+# skarabox host private keys — never commit
+*/host_key
+*/ssh
 
 # Editor/IDE
 .direnv/

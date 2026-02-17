@@ -125,7 +125,7 @@ def untar(args):
 def set_display(args):
     """Change display profile"""
     if not args:
-        print("Usage: d <profile>")
+        print("Usage: disp <profile>")
         return
 
     profile = args[0]
@@ -269,7 +269,7 @@ aliases.update({
     'msg': 'discord',
 
     # Development IDE
-    'ide': 'vscodium-fhs',
+    'ide': 'codium',
     'code': 'codium',
 
     # ============================================================================
@@ -307,7 +307,7 @@ aliases.update({
     'bak': 'cp @($arg0) @($arg0).bak -r',
     'decrypt': 'age -d',
     'encrypt': 'age -e',
-    'nm' : 'nmtui'
+    'wifi': 'nmtui',
 
     # ============================================================================
     # Development (Python Virtual Environments with uvox)
@@ -321,17 +321,21 @@ aliases.update({
     # Git & Version Control
     # ============================================================================
     'gup': git_sync,
+    'gst': 'git status',
+    'ga': 'git add .',
+    'gc': 'git commit -a -m',
+    'gl': 'git log --oneline --graph -10',
 
     # ============================================================================
     # Wallpaper & Display Configuration
     # ============================================================================
     'wp': set_wallpaper,
-    'd': set_display,
+    'disp': set_display,
 
     # ============================================================================
     # Network & IP
     # ============================================================================
-    'ipv4': get_local_ip,
+    'myip': get_local_ip,
 
     # ============================================================================
     # Web Development & Testing
@@ -368,7 +372,7 @@ def wallpaper_completer(prefix, line, begidx, endidx, ctx):
     return {'ls', 'search'}
 
 def display_completer(prefix, line, begidx, endidx, ctx):
-    """Completer for d (display) command"""
+    """Completer for disp (display) command"""
     try:
         import subprocess
         result = subprocess.run(['autorandr', '--list'], capture_output=True, text=True, check=False)
@@ -395,14 +399,14 @@ def venv_completer(prefix, line, begidx, endidx, ctx):
 try:
     from xonsh.completer import add_one_completer
     add_one_completer('wp', wallpaper_completer, 'start')
-    add_one_completer('d', display_completer, 'start')
+    add_one_completer('disp', display_completer, 'start')
     add_one_completer('vac', venv_completer, 'start')
 except ImportError:
     # Fallback for newer xonsh versions with different completer API
     try:
         import xonsh.completer.bash_completer as bash_completer
         bash_completer.COMPLETERS['wp'] = wallpaper_completer
-        bash_completer.COMPLETERS['d'] = display_completer
+        bash_completer.COMPLETERS['disp'] = display_completer
         bash_completer.COMPLETERS['vac'] = venv_completer
     except (ImportError, AttributeError):
         # If completer registration fails, continue without custom completers

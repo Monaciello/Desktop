@@ -3,18 +3,6 @@
 -- Adapted from PrettyBoyCosmo's for monaciello's nix-cfg dotfiles
 
 --------------------------------------------------------------------------------
--- 0. Suppress Deprecation Warnings
---------------------------------------------------------------------------------
--- Suppress lspconfig deprecation warning (lsp-zero handles internal migration)
-local old_notify = vim.notify
-vim.notify = function(msg, ...)
-  if msg:find("deprecated") or msg:find("lspconfig") then
-    return
-  end
-  return old_notify(msg, ...)
-end
-
---------------------------------------------------------------------------------
 -- 1. Basic Setup & Keybindings
 --------------------------------------------------------------------------------
 vim.g.mapleader = " "
@@ -30,13 +18,14 @@ keymap("n", "<leader>fg", "<cmd>Telescope live_grep<CR>", opts)
 keymap("n", "<leader>fb", "<cmd>Telescope buffers<CR>", opts)
 keymap("n", "<leader>fh", "<cmd>Telescope help_tags<CR>", opts)
 
--- LSP keybindings (set up by lsp-zero)
+-- LSP keybindings
 keymap("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
+keymap("n", "gr", "<cmd>lua vim.lsp.buf.references()<CR>", opts)
 keymap("n", "K", "<cmd>lua vim.lsp.buf.hover()<CR>", opts)
 keymap("n", "<leader>rn", "<cmd>lua vim.lsp.buf.rename()<CR>", opts)
 keymap("n", "<leader>ca", "<cmd>lua vim.lsp.buf.code_action()<CR>", opts)
-keymap("n", "[d", "<cmd>lua vim.diagnostic.goto_next()<CR>", opts)
-keymap("n", "]d", "<cmd>lua vim.diagnostic.goto_prev()<CR>", opts)
+keymap("n", "[d", "<cmd>lua vim.diagnostic.goto_prev()<CR>", opts)
+keymap("n", "]d", "<cmd>lua vim.diagnostic.goto_next()<CR>", opts)
 
 -- Navigation (tmux-aware)
 keymap("n", "<C-h>", "<cmd>TmuxNavigateLeft<CR>", opts)
@@ -60,12 +49,15 @@ keymap("n", "<leader>w", "<cmd>write<CR>", opts)
 keymap("n", "<leader>q", "<cmd>quit<CR>", opts)
 
 --------------------------------------------------------------------------------
--- 1. LSP Configuration (lsp-zero)
+-- 1. LSP Configuration (native vim.lsp.config, Neovim 0.11+)
 --------------------------------------------------------------------------------
-local lsp_zero = require("lsp-zero")
-lsp_zero.on_attach(function(client, bufnr)
-  lsp_zero.default_keymaps({buffer = bufnr})
-end)
+-- Apply cmp capabilities to all LSP servers
+vim.lsp.config("*", {
+  capabilities = require("cmp_nvim_lsp").default_capabilities(),
+})
+
+-- Enable servers (binaries provided by dev shells via direnv)
+vim.lsp.enable({ "nixd", "pyright", "rust_analyzer" })
 
 -- Setup completion
 local cmp = require("cmp")
@@ -81,21 +73,6 @@ cmp.setup({
     { name = "path" },
   }),
 })
-
--- Configure LSPs using lsp-zero (handles lspconfig internally)
--- Wrapped in pcall to handle any missing servers gracefully
-pcall(function()
-  lsp_zero.extend_lspconfig({
-    sign_text = true,
-    capabilities = nil,
-    float_border = 'rounded',
-  })
-
-  -- Only setup servers if they're available
-  lsp_zero.setup_servers({ 'nixd', 'pyright' })
-
-  lsp_zero.setup()
-end)
 
 --------------------------------------------------------------------------------
 -- 2. Treesitter Configuration
@@ -211,13 +188,16 @@ require("obsidian").setup({
   ui = {
     enable = true,
     update_esc_normalization = false,
-    checkboxes = {
-      [" "] = { char = "󰄱", hl_group = "ObsidianTodo" },
-      ["x"] = { char = "󰱒", hl_group = "ObsidianDone" },
-      [">"] = { char = "󰤥", hl_group = "ObsidianRightArrow" },
-      ["~"] = { char = "󰰱", hl_group = "ObsidianTilde" },
+  },
+  checkbox = {
+    order = {
+      { char = "󰄱", hl_group = "ObsidianTodo", key = " " },
+      { char = "󰱒", hl_group = "ObsidianDone", key = "x" },
+      { char = "󰤥", hl_group = "ObsidianRightArrow", key = ">" },
+      { char = "󰰱", hl_group = "ObsidianTilde", key = "~" },
     },
   },
+  legacy_commands = false,
 })
 
 --------------------------------------------------------------------------------

@@ -14,7 +14,6 @@
     i3lock-fancy
     i3blocks
     rofi
-    rofimoji
     picom
     feh
     stalonetray
@@ -44,13 +43,7 @@
 
     # Keyboards
     keymapp # ZSA keyboard configuration GUI
-    wally-cli # ZSA firmware flasher
-
-    # Fallback desktop environment
-    xfce.xfce4-panel
-    xfce.xfce4-settings
-    xfce.xfce4-session
-    xfce.xfce4-terminal
-    xfce.thunar
+    # GNU
+    stow
   ];
 }

@@ -2,19 +2,15 @@
 
 Secrets management using sops-nix with age encryption.
 
-## Skarabox Dual-Key Pattern
+## Dual-Key Pattern
 
-Skarabox uses TWO keys per host:
-- **Host key:** Derived from SSH host key at `/boot/host_key`
-- **Main key:** Your personal age key
-
-Both keys can decrypt secrets, enabling:
-- Local decryption with personal key
-- System decryption with host key at boot
+Two keys per host — both can decrypt secrets:
+- **Host key:** SSH host key (alice: `/etc/ssh/ssh_host_ed25519_key`, skarabox hosts: `/boot/host_key`)
+- **Main key:** Personal age key at `~/.config/sops/age/keys.txt`
 
 ## Setup Steps
 
-### 1. Generate Personal Age Key
+### 1. Personal age key
 
 ```bash
 mkdir -p ~/.config/sops/age
@@ -23,97 +19,98 @@ chmod 600 ~/.config/sops/age/keys.txt
 
 # Get public key
 age-keygen -y ~/.config/sops/age/keys.txt
-# Output: age1<your-public-key>
 ```
 
-### 2. Generate Host SSH Key
+### 2. Derive host age key from SSH host key
 
 ```bash
-ssh-keygen -t ed25519 -f hosts/alice/host_key -N ""
-
-# Convert to age public key
-nix shell nixpkgs#ssh-to-age -c ssh-to-age < hosts/alice/host_key.pub
-# Output: age1<host-public-key>
+# Use nix develop (not nix shell nixpkgs#ssh-to-age — that fails
+# if nix registry points to your flake instead of upstream nixpkgs)
+nix develop
+ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub
 ```
 
-### 3. Create .sops.yaml
+### 3. Create .sops.yaml at repo root
 
 ```yaml
 keys:
-  - &alice age1<host-public-key>
-  - &main age1<your-personal-key>
+  - &alice age1<host-age-key-from-step-2>
+  - &main age1<personal-key-from-step-1>
 
 creation_rules:
-  - path_regex: hosts/alice/secrets.yaml
+  - path_regex: hosts/alice/secrets\.yaml$
     key_groups:
       - age:
           - *alice
           - *main
 ```
 
-### 4. Create Secrets File
+### 4. Create encrypted secrets file
 
 ```bash
-# Create and encrypt
+# IMPORTANT: delete any existing plaintext placeholder first
+rm hosts/alice/secrets.yaml
+
+# sops creates a fresh encrypted file (opens $EDITOR)
 sops hosts/alice/secrets.yaml
 ```
 
-Example structure:
+Content to enter:
 ```yaml
-alice:
-  user:
-    hashedPassword: "$6$rounds=..."
-  disks:
-    rootPassphrase: "your-zfs-passphrase"
+user-password: "$6$rounds=..."
 ```
 
-### 5. Configure NixOS Module
+After saving, the file will be encrypted with sops metadata.
+
+**Gotcha:** If the file already exists as plaintext, `sops` will error
+with `sops metadata not found`. Always delete first and let sops create it.
+
+### 5. NixOS module config
 
 ```nix
-# hosts/alice/default.nix
+# hosts/alice/secrets.nix
+{ ... }:
 {
   sops = {
     defaultSopsFile = ./secrets.yaml;
-    age.sshKeyPaths = [ "/boot/host_key" ];
+    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
 
-    secrets."alice/user/hashedPassword" = {
-      neededForUsers = true;
+    secrets = {
+      "user-password" = { neededForUsers = true; };
     };
-  };
-
-  users.users.sasha = {
-    hashedPasswordFile = config.sops.secrets."alice/user/hashedPassword".path;
   };
 }
 ```
 
-### 6. Deploy Host Key
+```nix
+# hosts/alice/users.nix — reference the secret
+users.users.sasha = {
+  hashedPasswordFile = config.sops.secrets."user-password".path;
+};
+```
 
-Copy `host_key` to `/boot/` on target system (done during nixos-anywhere install).
+### 6. Git-track the encrypted file
+
+Nix flakes only see git-tracked files:
+```bash
+git add hosts/alice/secrets.yaml .sops.yaml
+nix flake check
+```
 
 ## Key Points
 
-- Config files reference secrets via `config.sops.secrets."path".path`
-- Config files are NOT encrypted - only `secrets.yaml` is
+- `.sops.yaml` lives at **repo root** (skarabox CLI tools expect it there)
+- Config files reference secrets via `config.sops.secrets."name".path`
+- Config files are NOT encrypted — only `secrets.yaml` is
 - Secrets decrypt at activation to `/run/secrets/` (tmpfs)
-- Host key lives at `/boot/host_key` for boot-time decryption
-- Personal key stays at `~/.config/sops/age/keys.txt`
-
-## Password Generation
-
-```bash
-# Generate and hash
-password=$(openssl rand -base64 32)
-echo "$password" | mkpasswd -s
-# Store hash in secrets.yaml
-```
+- Skarabox CLI tools use `sops.key` by default (`skarabox.sopsKeyPath`)
+- For desktop hosts using system SSH key, set `age.sshKeyPaths` accordingly
 
 ## Editing Secrets
 
 ```bash
-# Edit existing encrypted file
 sops hosts/alice/secrets.yaml
 
-# Re-encrypt with new keys after .sops.yaml changes
+# Re-encrypt after .sops.yaml key changes
 sops updatekeys hosts/alice/secrets.yaml
 ```
