@@ -1,0 +1,2 @@
+# Desktop
+Personal nixOS configuration
