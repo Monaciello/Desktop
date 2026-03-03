@@ -1,22 +1,28 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 let
-  feh = pkgs.feh;
+  isLinux = pkgs.stdenv.hostPlatform.isLinux;
+  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+
+  # Cross-platform tools
   mpv = pkgs.mpv;
-  zathura = pkgs.zathura;
-  xdgOpen = "${pkgs.xdg-utils}/bin/xdg-open";
   fileCmd = "${pkgs.file}/bin/file";
   gnutar = pkgs.gnutar;
   unzip = pkgs.unzip;
   unrar = pkgs.unrar;
   p7zip = pkgs.p7zip;
-  dragonDrop = pkgs.dragon-drop;
   bat = pkgs.bat;
   kitty = pkgs.kitty;
   pistol = pkgs.pistol;
   fzf = pkgs.fzf;
   ripgrep = pkgs.ripgrep;
   findutils = pkgs.findutils;
+
+  # Linux-only tools
+  feh = if isLinux then pkgs.feh else null;
+  zathura = if isLinux then pkgs.zathura else null;
+  xdgOpen = if isLinux then "${pkgs.xdg-utils}/bin/xdg-open" else "open";
+  dragonDrop = if isLinux then pkgs.dragon-drop else null;
 
   previewer = pkgs.writeShellScriptBin "pv" ''
     #!/bin/sh
@@ -78,15 +84,25 @@ in
     };
 
     commands = {
-      open = ''
-        case $(${fileCmd} --mime-type "$f" -bL) in
-          text/*) $EDITOR "$f" ;;
-          image/*) ${feh}/bin/feh "$f" ;;
-          video/*) ${mpv}/bin/mpv "$f" ;;
-          application/pdf) ${zathura}/bin/zathura "$f" ;;
-          *) ${xdgOpen} "$f" ;;
-        esac
-      '';
+      open =
+        if isLinux then
+          ''
+            case $(${fileCmd} --mime-type "$f" -bL) in
+              text/*) $EDITOR "$f" ;;
+              image/*) ${feh}/bin/feh "$f" ;;
+              video/*) ${mpv}/bin/mpv "$f" ;;
+              application/pdf) ${zathura}/bin/zathura "$f" ;;
+              *) ${xdgOpen} "$f" ;;
+            esac
+          ''
+        else
+          ''
+            case $(${fileCmd} --mime-type "$f" -bL) in
+              text/*) $EDITOR "$f" ;;
+              video/*) ${mpv}/bin/mpv "$f" ;;
+              *) open "$f" ;;
+            esac
+          '';
 
       extract = ''
         ''${{
@@ -103,7 +119,11 @@ in
         }}
       '';
 
-      dragon-out = "%${dragonDrop}/bin/dragon-drop -a -x \"\$fx\"";
+      dragon-out =
+        if isLinux then
+          "%${dragonDrop}/bin/dragon-drop -a -x \"\$fx\""
+        else
+          "echo 'dragon-drop not available on macOS'";
 
       mkdir = ''
         ''${{
@@ -151,18 +171,19 @@ in
     '';
   };
 
-  home.packages = with pkgs; [
-    dragon-drop
-    pistol
-    unzip
-    unrar
-    p7zip
-    gnutar
-    poppler-utils
-    fzf
-    ripgrep
-    findutils
-  ];
+  home.packages =
+    [
+      pistol
+      pkgs.unzip
+      pkgs.unrar
+      pkgs.p7zip
+      pkgs.gnutar
+      pkgs.poppler-utils
+      pkgs.fzf
+      pkgs.ripgrep
+      pkgs.findutils
+    ]
+    ++ lib.optionals isLinux [ pkgs.dragon-drop ];
 
   xdg.configFile."lf/icons".source = pkgs.fetchurl {
     url = "https://raw.githubusercontent.com/gokcehan/lf/master/etc/icons.example";

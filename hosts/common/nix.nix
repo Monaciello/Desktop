@@ -18,7 +18,7 @@ in
       builders-use-substitutes = true;
     };
 
-    registry = lib.mapAttrs (_: flake: { inherit flake; }) flakeInputs;
+    registry = lib.mapAttrs (_: flake: lib.mkDefault { inherit flake; }) flakeInputs;
 
     gc = {
       automatic = true;

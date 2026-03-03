@@ -14,6 +14,8 @@
 
   networking.hostName = "macbook";
 
+  system.primaryUser = "sasha";
+
   users.users.sasha = {
     home = "/Users/sasha";
     shell = pkgs.zsh;
@@ -35,9 +37,9 @@
 
       finder = {
         AppleShowAllExtensions = true;
-        FHIdeExtension = false;
         ShowPathbar = true;
         ShowStatusBar = true;
+        FXEnableExtensionChangeWarning = false;
       };
 
       NSGlobalDomain = {

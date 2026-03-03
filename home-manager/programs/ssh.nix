@@ -24,7 +24,7 @@ in
       };
 
       "oci-claw" = {
-        hostname = "129.213.107.58";
+        hostname = "";
         user = "sasha";
         port = 2222;
       };
