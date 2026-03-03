@@ -1,6 +1,6 @@
-# NixOS Configuration
+# Desktop Configuration
 
-Declarative NixOS flake for alice workstation. Based on [nix-starter-config](https://github.com/Misterio77/nix-starter-configs).
+Cross-platform Nix configuration for NixOS (`alice`) and macOS (`macbook`). Based on [nix-starter-config](https://github.com/Misterio77/nix-starter-configs).
 
 ## Architecture
 
@@ -86,14 +86,108 @@ nix build .#nixosConfigurations.alice.config.system.build.vm
 - OCI ARM companion host
 - Security hardening sweep
 
+## Bootstrap New macOS Machine
+
+### Prerequisites
+
+1. **Install Nix** (multi-user installation):
+   ```bash
+   sh <(curl -L https://nixos.org/nix/install)
+   ```
+
+2. **Enable flakes** (if not already enabled):
+   ```bash
+   mkdir -p ~/.config/nix
+   echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+   ```
+
+3. **Install Xcode Command Line Tools** (required for nix-darwin):
+   ```bash
+   xcode-select --install
+   ```
+
+4. **Clone this repository**:
+   ```bash
+   mkdir -p ~/Projects
+   git clone https://github.com/Monaciello/Desktop.git ~/Projects/Desktop
+   cd ~/Projects/Desktop
+   ```
+
+### First-Time Activation
+
+```bash
+# Bootstrap nix-darwin (first time only)
+nix run nix-darwin -- switch --flake ~/Projects/Desktop#macbook
+```
+
+This will:
+- Install nix-darwin system configuration
+- Set up Homebrew via nix-homebrew
+- Install GUI apps (1Password, Firefox, Cursor, etc.) as Homebrew casks
+- Configure system defaults (Dock, Finder, trackpad, keyboard)
+- Enable Touch ID for sudo
+- Set up home-manager with cross-platform dotfiles
+
+### Subsequent Rebuilds
+
+After the initial bootstrap, use:
+
+```bash
+darwin-rebuild switch --flake ~/Projects/Desktop#macbook
+
+# Or use the shell alias (after first rebuild):
+rebuild
+```
+
+### What Gets Installed
+
+**Via Nix (system packages):**
+- Development tools: `python313`, `uv`, `git`, `neovim`, `kitty`
+- CLI tools: `eza`, `bat`, `ripgrep`, `fzf`, `zoxide`, `btop`
+- Shell: `zsh` with `starship` prompt
+
+**Via Homebrew (GUI apps):**
+- 1Password, Firefox, Discord, Obsidian, VLC, Anki, Telegram, Cursor
+
+**Dotfiles (cross-platform):**
+- `zsh`, `neovim`, `kitty`, `tmux`, `git`, `lf`, `ssh`
+- Platform-aware aliases (e.g., `xc` → `pbcopy` on macOS, `wl-copy` on Linux)
+
+### Customization
+
+1. **Change hostname:**
+   Edit `hosts/macbook/default.nix`:
+   ```nix
+   networking.hostName = "your-hostname";
+   ```
+
+2. **Add/remove Homebrew casks:**
+   Edit `hosts/macbook/homebrew.nix`:
+   ```nix
+   casks = [ "app-name" ];
+   ```
+
+3. **Modify system settings:**
+   Edit `hosts/macbook/default.nix` under `system.defaults.*`
+
 ## Commands
 
+### NixOS (alice)
 ```bash
 sudo nixos-rebuild switch --flake ~/.config/nixos#alice  # Rebuild system
 home-manager switch --flake ~/.config/nixos#sasha@alice  # Rebuild home
-nix develop .#dev                                         # Dev shell
-nix flake check                                           # Validate
-nix fmt                                                   # Format
+```
+
+### macOS (macbook)
+```bash
+darwin-rebuild switch --flake ~/Projects/Desktop#macbook  # Rebuild system
+```
+
+### Cross-Platform
+```bash
+nix develop .#dev              # Dev shell
+nix flake check                # Validate
+nix fmt                        # Format
 ```
 
 ## Adding Packages
