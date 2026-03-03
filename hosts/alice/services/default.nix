@@ -4,6 +4,7 @@
   imports = [
     ./network.nix
     ./virt.nix
+    ./ollama.nix
   ];
 
   documentation.enable = true;

@@ -1,37 +1,71 @@
 { pkgs }:
-{
+
+let
+  isLinux = pkgs.stdenv.hostPlatform.isLinux;
+
   default = pkgs.mkShell {
-    NIX_CONFIG = "experimental-features = nix-command flakes";
     nativeBuildInputs = with pkgs; [
-      nix
       home-manager
       git
+      direnv
+      pre-commit
+      statix
+      deadnix
+    ];
+    shellHook = ''
+      pre-commit install --allow-missing-config 2>/dev/null || true
+    '';
+  };
+
+  rust = pkgs.mkShell {
+    strictDeps = true;
+    nativeBuildInputs = with pkgs; [
+      cargo
+      rustc
+      clippy
+      rustfmt
+      rust-analyzer
+      pkg-config
+    ];
+    env.RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+    env.RUST_BACKTRACE = "1";
+  };
+
+  oci = pkgs.mkShell {
+    nativeBuildInputs = with pkgs; [
+      oci-cli
+      jq
+      curl
     ];
   };
 
-  # FHS environment for running pre-compiled Linux binaries
-  # Useful for: AppImages, proprietary software, some game tools
-  fhs =
-    (pkgs.buildFHSEnv {
-      name = "fhs";
-      targetPkgs =
-        pkgs:
-        (with pkgs; [
-          xonsh # single shell for everything
-          pkgsi686Linux.glibc
-          pkgsi686Linux.stdenv.cc.cc.lib
-        ])
-        ++ (with pkgs.xorg; [
-          libX11
-          libXcursor
-          libXrandr
-        ]);
-      multiPkgs =
-        pkgs:
-        (with pkgs; [
-          pkgsi686Linux.glibc
-          pkgsi686Linux.stdenv.cc.cc.lib
-        ]);
-      runScript = "xonsh";
-    }).env;
-}
+  linuxShells =
+    if isLinux then {
+      fhs =
+        (pkgs.buildFHSEnv {
+          name = "fhs";
+          targetPkgs =
+            pkgs:
+            (with pkgs; [
+              zsh
+              pkgsi686Linux.glibc
+              pkgsi686Linux.stdenv.cc.cc.lib
+              libx11
+              libxcursor
+              libxrandr
+            ]);
+          multiPkgs =
+            pkgs:
+            (with pkgs; [
+              pkgsi686Linux.glibc
+              pkgsi686Linux.stdenv.cc.cc.lib
+            ]);
+          runScript = "zsh";
+        }).env;
+    }
+    else
+      { };
+in
+{
+  inherit default rust oci;
+} // linuxShells

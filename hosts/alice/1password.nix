@@ -57,17 +57,9 @@
   # };
 
   # SSH/Git Integration
-  # After enabling "SSH Agent" in 1Password settings, configure in home-manager:
-  #
-  # programs.ssh.extraConfig = ''
-  #   Host *
-  #     IdentityAgent ~/.1password/agent.sock
-  # '';
-  #
-  # programs.git.extraConfig = {
-  #   gpg.format = "ssh";
-  #   gpg."ssh".program = "${pkgs._1password-gui}/bin/op-ssh-sign";
-  # };
+  # Wired up declaratively in home-manager:
+  #   - programs/ssh.nix  -> IdentityAgent ~/.1password/agent.sock
+  #   - programs/git.nix  -> gpg.ssh.program = op-ssh-sign
 
   # Note: For fingerprint unlock, ensure polkit agent is running
   # i3 users: start polkit agent in i3 config or via systemd user service

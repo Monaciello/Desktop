@@ -4,7 +4,7 @@ Specific rules for this NixOS flake. See `AI.md` for general guardrails.
 
 ## Current Focus
 
-Phase 3: Documentation cleanup and build validation. No new features until `nix flake check` passes.
+Phase 4: OCI deployment. `nix flake check` passes. Next: `nixos-anywhere` against oci-claw once 1Password SSH agent confirmed live.
 
 ## File Ownership
 
@@ -20,13 +20,26 @@ Phase 3: Documentation cleanup and build validation. No new features until `nix 
 
 ## Verification Required
 
-Before declaring any change complete:
+Before declaring any change complete — **in this order**:
 
 ```bash
-git add <new-files>
-nix flake check
+git add -A                        # MUST stage first — Nix evaluates git tree,
+                                  # stale store paths mask your actual edits
+nix flake check 2>&1 | grep -v "^warning: Git"
 nixfmt --check <modified-files>
 ```
+
+**SSH / 1Password rule**: SSH keys live in 1Password, never on disk. The agent
+config at `~/.config/1Password/ssh/agent.toml` must include the correct vaults
+(currently: infra, Private, Personal). SSH commands will silently fail with
+`Permission denied` unless `~/.1password/agent.sock` is live, 1Password GUI is
+running, and `SSH_AUTH_SOCK` is set. Always verify:
+```bash
+export SSH_AUTH_SOCK=~/.1password/agent.sock
+ssh-add -l   # must list "OCI ssh" key before any ssh/nixos-anywhere invocation
+```
+**OCI note**: The oci-claw instance uses the "OCI ssh" key from the 1Password
+infra vault. The old `sasha@alice` key is lost — do not reference it.
 
 ## Package Placement
 
@@ -80,6 +93,23 @@ refactor(scope): description
 
 Scopes: `hosts`, `home-manager`, `shells`, `flake`, `docs`
 
+## Debugging Protocol — Nix Evaluation Warnings
+
+When `nix flake check` emits evaluation warnings:
+
+1. **Stage first**: `git add -A` — warnings from stale store paths are misleading
+2. **Isolate source**: check `homeConfigurations` and `nixosConfigurations` separately
+   ```bash
+   nix eval '.#homeConfigurations."sasha@alice".activationPackage' 2>&1 | grep "warning"
+   nix eval '.#nixosConfigurations.alice.config.system.build.toplevel' 2>&1 | grep "warning"
+   ```
+3. **Trace to file**: use `nix eval --raw 'nixpkgs#path'` then `rg` in the nixpkgs store
+4. **Classify before fixing**:
+   - Our code → fix directly
+   - Upstream nixpkgs derivation → `lib.warn` fires at evaluation time, overlays
+     **cannot** intercept it; document as upstream TODO and file PR
+   - Do NOT attempt >1 overlay strategy without first confirming where `lib.warn` is called
+
 ## Banned Actions
 
 - Adding `--impure` without documenting why
@@ -87,3 +117,4 @@ Scopes: `hosts`, `home-manager`, `shells`, `flake`, `docs`
 - Committing unencrypted secrets
 - Using `lib.mkForce` without justification
 - Creating new hosts without approval
+- Declaring a warning "transitive/upstream" without actually tracing it to a file first

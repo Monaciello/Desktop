@@ -1,0 +1,48 @@
+---
+description: "Spec-driven development workflow for AI agents. Use when starting features, breaking down work, or executing tasks."
+alwaysApply: false
+---
+
+# Spec-Driven Development
+
+When building features with AI agents, write a **spec** before code. Specs eliminate guesswork and give agents a clear contract.
+
+## When to Use
+
+- Starting a new feature (3+ files, 30+ min)
+- Agent keeps guessing wrong approach
+- Need to pause, review, or hand off mid-feature
+
+## Spec Structure
+
+```markdown
+# Feature Name
+## Why — Problem being solved
+## What — Concrete deliverable
+## Constraints — Must / Must Not / Out of Scope
+## Current State — Relevant files, patterns
+## Tasks — T1, T2... each with What, Files, Verify
+## Validation — End-to-end checks
+```
+
+## Workflow
+
+1. **Generate spec** — Use `.ai/templates/spec.md`, save to `.ai/specs/<feature-slug>.md`
+2. **Review & refine** — Ensure decisions are yours
+3. **Execute one task** — Fresh session: "Read .ai/specs/X.md and implement T1"
+4. **Verify, review, commit** — Run verify step, human review, commit
+5. **Repeat** for each task
+
+## Task Rules
+
+- **Fresh context per task** — New session avoids context rot
+- **Small tasks** — <3 files, <30 min each
+- **Verify mandatory** — Every task needs: `command` or `Manual: [specific check]`
+
+## Rules vs Specs
+
+| Rules (.cursor/rules) | Specs (.ai/specs) |
+|----------------------|-------------------|
+| Coding standards, personas | Feature contracts, tasks |
+| Always/glob-triggered | Per-feature, on demand |
+| "How to write code" | "What to build, what not to build" |

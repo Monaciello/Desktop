@@ -1,28 +1,18 @@
-# GUI applications
-{ pkgs, ... }:
-{
+# GUI applications — Linux packages; macOS equivalents come from Homebrew casks
+{ pkgs, lib, ... }:
+lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
   home.packages = with pkgs; [
-    # Browsers
     tor-browser
-
-    # Media
     vlc
     obs-studio
-
-    # Office
     libreoffice-qt6-fresh
     obsidian
     zathura
     xournalpp
     anki
-
-    # Communication
     discord
     telegram-desktop
-
-    # Desktop tools
     rofimoji
-
   ];
   programs.firefox.enable = true;
 }

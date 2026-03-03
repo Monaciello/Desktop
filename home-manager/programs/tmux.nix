@@ -1,5 +1,12 @@
 # Tmux configuration
-{ pkgs, ... }:
+# Prefix: Space (C-Space)
+# Mode: vi
+# Pane nav: Space+h/j/k/l
+# Pane resize: Ctrl+Alt+h/j/k/l (no prefix)
+{ pkgs, lib, ... }:
+let
+  clipboardCmd = if pkgs.stdenv.hostPlatform.isDarwin then "pbcopy" else "wl-copy";
+in
 {
   programs.tmux = {
     enable = true;
@@ -52,9 +59,9 @@
 
       # Copy mode (vim keybinds)
       bind -T copy-mode-vi v send -X begin-selection
-      bind -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "xclip"
+      bind -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "${clipboardCmd}"
       bind P paste-buffer
-      bind -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "xclip"
+      bind -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "${clipboardCmd}"
 
       # Minimal tmux status theme settings
       set -g @minimal-tmux-bg "#ccffff"

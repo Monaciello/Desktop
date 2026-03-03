@@ -8,7 +8,7 @@ Declarative NixOS flake for alice workstation. Based on [nix-starter-config](htt
 flake.nix
 ├── hosts/alice/        # SYSTEM: hardware, boot, services
 ├── home-manager/       # USER: dotfiles, user apps
-│   ├── modules/        # i3, kitty, neovim, rofi, xonsh
+│   ├── modules/        # i3, kitty, neovim, rofi, zsh
 │   └── programs/       # git, tmux
 ├── shells/             # PROJECT: dev environments
 ├── pkgs/               # Custom packages
@@ -50,9 +50,9 @@ nix build .#nixosConfigurations.alice.config.system.build.vm
 | 1 | Add fallback DE (xfce4) | `hosts/alice/packages.nix` |
 | 2 | Add autorandr | `hosts/alice/packages.nix` |
 | 3 | Test uv venv + prompt | `shells/` |
-| 4 | Document gup alias risks | `home-manager/modules/xonsh.nix` |
-| 5 | Document webup alias | `home-manager/modules/xonsh.nix` |
-| 6 | Remove unused command_output() | `home-manager/modules/xonsh.nix` |
+| 4 | ~~Document gup alias risks~~ | migrated to zsh.nix |
+| 5 | ~~Document webup alias~~ | migrated to zsh.nix (localhost-only) |
+| 6 | ~~Remove unused command_output()~~ | removed with xonsh migration |
 | 7 | Add LSPs (nixd, pyright) | `home-manager/modules/neovim.nix` |
 | 8 | Update Obsidian vault path | `home-manager/modules/dotfiles/init.lua` |
 | 9 | Test image.nvim | manual verification |
@@ -60,18 +60,31 @@ nix build .#nixosConfigurations.alice.config.system.build.vm
 
 ## Roadmap
 
-### Phase 4: Multi-Host
+### Phase 4: Multi-Host Prep
 - Extract common config to `hosts/common/`
-- Setup deployment (colmena or deploy-rs)
+- Re-add deploy-rs input, `nix flake check` green
 
-### Phase 5: Skarabox Integration
-- Import skarabox/selfhostblocks modules
-- Services: Vaultwarden, Forgejo, Nextcloud
-- See `docs/skarabox/`
+### Phase 5: Skarabox + SHB (openclaw P0–P2)
+- Add skarabox + selfhostblocks inputs
+- Scaffold first server host (`nix run .#gen-new-host`)
+- Forgejo via `shb.forgejo` (git remote for rollback)
+- Tailscale firewall hardened, Nginx + Authelia SSO
+- See `docs/deployment/skarabox-deployment-guide.md`
 
-### Phase 6: Infrastructure
-- Monitoring (Prometheus/Grafana)
-- Backup strategy, VPN mesh, CI/CD
+### Phase 5b: VM Isolation (openclaw P3)
+- microvm.nix replaces libvirtd
+- agent-gateway VM declared in flake
+
+### Phase 6: OpenClaw (openclaw P4–P6)
+- SOPS agent secrets (`secrets/agent.yaml`)
+- Scout-DJ openclaw-nix module
+- Ollama local inference
+- See `docs/openclaw/master-guide.md`
+
+### Phase 7: Observability + OCI (openclaw P7–P9)
+- Prometheus/Grafana/Loki via SHB
+- OCI ARM companion host
+- Security hardening sweep
 
 ## Commands
 
@@ -123,8 +136,26 @@ sudo nixos-rebuild switch --rollback    # System recovery
 
 ## Documentation
 
-- `docs/keybindings.md` - i3, tmux, neovim keybindings
-- `docs/skarabox/sops-setup.md` - Secrets management
-- `docs/skarabox/setup-instructions.md` - Skarabox integration
+```
+docs/
+├── wip.md                                    # Sprint tracker
+├── migration/
+│   └── skarabox.md                           # Skarabox migration status
+├── deployment/
+│   ├── skarabox-deployment-guide.md          # Vol 3: Skarabox + SHB reference
+│   └── skarabox-setup-instructions.md        # Adding a server host
+├── setup/
+│   ├── sops-setup.md                         # SOPS age encryption setup
+│   ├── 1password-sops-integration.md         # 1Password + SOPS
+│   ├── 1password-quick-reference.md          # 1Password quick ref
+│   └── cursor-packaging-guide.md             # Cursor packaging
+├── openclaw/
+│   └── master-guide.md                       # OpenClaw × NixOS × Skarabox P0–P9 guide
+└── reference/
+    ├── nix-types-networking-reference.md     # Vol 1: Nix types + networking
+    ├── nix-types-vol2-extended-recipes.md    # Vol 2: Extended recipes
+    └── aliases-and-services.md               # Shell aliases and service map
+```
+
 - `.claude/AI.md` - AI assistant guardrails
 - `.claude/CLAUDE.md` - Project-specific constraints

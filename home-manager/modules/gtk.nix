@@ -125,7 +125,6 @@ in
     package = pkgs.bibata-cursors;
     size = 24;
     gtk.enable = true;
-    x11.enable = true;
   };
 
   # Generate and install gtk.css for both GTK 3 and 4

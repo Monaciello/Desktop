@@ -1,20 +1,15 @@
-# Home-manager configuration
-{ ... }:
+# Home-manager configuration — shared across NixOS and macOS
+{ lib, ... }:
 {
   imports = [
-    ./modules/all.nix
+    ./modules/shared.nix
     ./packages
     ./programs
   ];
 
-  # Allow unfree packages (like Obsidian, VSCodium extensions, etc.)
-  nixpkgs.config.allowUnfree = true;
-
   home = {
     username = "sasha";
-    homeDirectory = "/home/sasha";
+    homeDirectory = lib.mkDefault "/home/sasha";
     stateVersion = "24.11";
   };
-
-  systemd.user.startServices = "sd-switch";
 }

@@ -7,17 +7,33 @@
   # This one contains whatever you want to overlay
   # You can change versions, add patches, set compilation flags, anything really.
   # https://nixos.wiki/wiki/Overlays
-  modifications = final: prev: {
-    # example = prev.example.overrideAttrs (oldAttrs: rec {
-    # ...
-    # });
+  modifications = final: prev: { };
+
+  # Cursor IDE from code-cursor-nix; built with our pkgs so we can fix deps
+  code-cursor = inputs.code-cursor-nix.overlays.default;
+
+  # Fix xorg deprecation warnings: code-cursor-nix/package.nix uses deprecated
+  # xorg.libX11 etc. Override to use top-level libx11, libxkbfile, etc.
+  cursor-xorg-fix = final: prev: {
+    cursor = prev.cursor.override {
+      xorg = {
+        libxkbfile = prev.libxkbfile;
+        libX11 = prev.libx11;
+        libXcomposite = prev.libxcomposite;
+        libXdamage = prev.libxdamage;
+        libXext = prev.libxext;
+        libXfixes = prev.libxfixes;
+        libXrandr = prev.libxrandr;
+        libxcb = prev.libxcb;
+      };
+    };
   };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
   # be accessible through 'pkgs.unstable'
   unstable = final: _prev: {
     unstable = import inputs.nixpkgs-unstable {
-      system = final.system;
+      system = final.stdenv.hostPlatform.system;
       config.allowUnfree = true;
     };
   };

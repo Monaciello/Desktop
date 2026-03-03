@@ -2,7 +2,7 @@
 { ... }:
 {
   imports = [
-    ./xserver.nix
+    ./sway.nix
     ./audio.nix
     ./portal.nix
   ];
