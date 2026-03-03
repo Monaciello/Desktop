@@ -1,21 +1,17 @@
-# Development tools
 { pkgs, ... }:
 {
-  home.packages = with pkgs; [
-    # Secrets management
-    sops
-    age
-    ssh-to-age
-
-    # Languages
-    python3
-
-    # Linting/testing
-    shellcheck
-    bats
-
-    # Nix tools
-    nixfmt
-    statix
+  home.packages = [
+    pkgs.sops
+    pkgs.age
+    pkgs.ssh-to-age
+    pkgs.python313
+    pkgs.shellcheck
+    pkgs.ruff
+    pkgs.black
+    pkgs.bats
+    pkgs.nixd
+    pkgs.nixfmt-rfc-style
+    pkgs.statix
+    pkgs.rust-analyzer
   ];
 }

@@ -1,6 +1,6 @@
-# NixOS Configuration
+# Desktop Configuration
 
-Declarative NixOS flake for alice workstation. Based on [nix-starter-config](https://github.com/Misterio77/nix-starter-configs).
+Cross-platform Nix configuration for NixOS (`alice`) and macOS (`macbook`). Based on [nix-starter-config](https://github.com/Misterio77/nix-starter-configs).
 
 ## Architecture
 
@@ -8,7 +8,7 @@ Declarative NixOS flake for alice workstation. Based on [nix-starter-config](htt
 flake.nix
 ├── hosts/alice/        # SYSTEM: hardware, boot, services
 ├── home-manager/       # USER: dotfiles, user apps
-│   ├── modules/        # i3, kitty, neovim, rofi, xonsh
+│   ├── modules/        # i3, kitty, neovim, rofi, zsh
 │   └── programs/       # git, tmux
 ├── shells/             # PROJECT: dev environments
 ├── pkgs/               # Custom packages
@@ -50,9 +50,9 @@ nix build .#nixosConfigurations.alice.config.system.build.vm
 | 1 | Add fallback DE (xfce4) | `hosts/alice/packages.nix` |
 | 2 | Add autorandr | `hosts/alice/packages.nix` |
 | 3 | Test uv venv + prompt | `shells/` |
-| 4 | Document gup alias risks | `home-manager/modules/xonsh.nix` |
-| 5 | Document webup alias | `home-manager/modules/xonsh.nix` |
-| 6 | Remove unused command_output() | `home-manager/modules/xonsh.nix` |
+| 4 | ~~Document gup alias risks~~ | migrated to zsh.nix |
+| 5 | ~~Document webup alias~~ | migrated to zsh.nix (localhost-only) |
+| 6 | ~~Remove unused command_output()~~ | removed with xonsh migration |
 | 7 | Add LSPs (nixd, pyright) | `home-manager/modules/neovim.nix` |
 | 8 | Update Obsidian vault path | `home-manager/modules/dotfiles/init.lua` |
 | 9 | Test image.nvim | manual verification |
@@ -60,27 +60,134 @@ nix build .#nixosConfigurations.alice.config.system.build.vm
 
 ## Roadmap
 
-### Phase 4: Multi-Host
+### Phase 4: Multi-Host Prep
 - Extract common config to `hosts/common/`
-- Setup deployment (colmena or deploy-rs)
+- Re-add deploy-rs input, `nix flake check` green
 
-### Phase 5: Skarabox Integration
-- Import skarabox/selfhostblocks modules
-- Services: Vaultwarden, Forgejo, Nextcloud
-- See `docs/skarabox/`
+### Phase 5: Skarabox + SHB (openclaw P0–P2)
+- Add skarabox + selfhostblocks inputs
+- Scaffold first server host (`nix run .#gen-new-host`)
+- Forgejo via `shb.forgejo` (git remote for rollback)
+- Tailscale firewall hardened, Nginx + Authelia SSO
+- See `docs/deployment/skarabox-deployment-guide.md`
 
-### Phase 6: Infrastructure
-- Monitoring (Prometheus/Grafana)
-- Backup strategy, VPN mesh, CI/CD
+### Phase 5b: VM Isolation (openclaw P3)
+- microvm.nix replaces libvirtd
+- agent-gateway VM declared in flake
+
+### Phase 6: OpenClaw (openclaw P4–P6)
+- SOPS agent secrets (`secrets/agent.yaml`)
+- Scout-DJ openclaw-nix module
+- Ollama local inference
+- See `docs/openclaw/master-guide.md`
+
+### Phase 7: Observability + OCI (openclaw P7–P9)
+- Prometheus/Grafana/Loki via SHB
+- OCI ARM companion host
+- Security hardening sweep
+
+## Bootstrap New macOS Machine
+
+### Prerequisites
+
+1. **Install Nix** (multi-user installation):
+   ```bash
+   sh <(curl -L https://nixos.org/nix/install)
+   ```
+
+2. **Enable flakes** (if not already enabled):
+   ```bash
+   mkdir -p ~/.config/nix
+   echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+   ```
+
+3. **Install Xcode Command Line Tools** (required for nix-darwin):
+   ```bash
+   xcode-select --install
+   ```
+
+4. **Clone this repository**:
+   ```bash
+   mkdir -p ~/Projects
+   git clone https://github.com/Monaciello/Desktop.git ~/Projects/Desktop
+   cd ~/Projects/Desktop
+   ```
+
+### First-Time Activation
+
+```bash
+# Bootstrap nix-darwin (first time only)
+nix run nix-darwin -- switch --flake ~/Projects/Desktop#macbook
+```
+
+This will:
+- Install nix-darwin system configuration
+- Set up Homebrew via nix-homebrew
+- Install GUI apps (1Password, Firefox, Cursor, etc.) as Homebrew casks
+- Configure system defaults (Dock, Finder, trackpad, keyboard)
+- Enable Touch ID for sudo
+- Set up home-manager with cross-platform dotfiles
+
+### Subsequent Rebuilds
+
+After the initial bootstrap, use:
+
+```bash
+darwin-rebuild switch --flake ~/Projects/Desktop#macbook
+
+# Or use the shell alias (after first rebuild):
+rebuild
+```
+
+### What Gets Installed
+
+**Via Nix (system packages):**
+- Development tools: `python313`, `uv`, `git`, `neovim`, `kitty`
+- CLI tools: `eza`, `bat`, `ripgrep`, `fzf`, `zoxide`, `btop`
+- Shell: `zsh` with `starship` prompt
+
+**Via Homebrew (GUI apps):**
+- 1Password, Firefox, Discord, Obsidian, VLC, Anki, Telegram, Cursor
+
+**Dotfiles (cross-platform):**
+- `zsh`, `neovim`, `kitty`, `tmux`, `git`, `lf`, `ssh`
+- Platform-aware aliases (e.g., `xc` → `pbcopy` on macOS, `wl-copy` on Linux)
+
+### Customization
+
+1. **Change hostname:**
+   Edit `hosts/macbook/default.nix`:
+   ```nix
+   networking.hostName = "your-hostname";
+   ```
+
+2. **Add/remove Homebrew casks:**
+   Edit `hosts/macbook/homebrew.nix`:
+   ```nix
+   casks = [ "app-name" ];
+   ```
+
+3. **Modify system settings:**
+   Edit `hosts/macbook/default.nix` under `system.defaults.*`
 
 ## Commands
 
+### NixOS (alice)
 ```bash
 sudo nixos-rebuild switch --flake ~/.config/nixos#alice  # Rebuild system
 home-manager switch --flake ~/.config/nixos#sasha@alice  # Rebuild home
-nix develop .#dev                                         # Dev shell
-nix flake check                                           # Validate
-nix fmt                                                   # Format
+```
+
+### macOS (macbook)
+```bash
+darwin-rebuild switch --flake ~/Projects/Desktop#macbook  # Rebuild system
+```
+
+### Cross-Platform
+```bash
+nix develop .#dev              # Dev shell
+nix flake check                # Validate
+nix fmt                        # Format
 ```
 
 ## Adding Packages
@@ -123,8 +230,26 @@ sudo nixos-rebuild switch --rollback    # System recovery
 
 ## Documentation
 
-- `docs/keybindings.md` - i3, tmux, neovim keybindings
-- `docs/skarabox/sops-setup.md` - Secrets management
-- `docs/skarabox/setup-instructions.md` - Skarabox integration
+```
+docs/
+├── wip.md                                    # Sprint tracker
+├── migration/
+│   └── skarabox.md                           # Skarabox migration status
+├── deployment/
+│   ├── skarabox-deployment-guide.md          # Vol 3: Skarabox + SHB reference
+│   └── skarabox-setup-instructions.md        # Adding a server host
+├── setup/
+│   ├── sops-setup.md                         # SOPS age encryption setup
+│   ├── 1password-sops-integration.md         # 1Password + SOPS
+│   ├── 1password-quick-reference.md          # 1Password quick ref
+│   └── cursor-packaging-guide.md             # Cursor packaging
+├── openclaw/
+│   └── master-guide.md                       # OpenClaw × NixOS × Skarabox P0–P9 guide
+└── reference/
+    ├── nix-types-networking-reference.md     # Vol 1: Nix types + networking
+    ├── nix-types-vol2-extended-recipes.md    # Vol 2: Extended recipes
+    └── aliases-and-services.md               # Shell aliases and service map
+```
+
 - `.claude/AI.md` - AI assistant guardrails
 - `.claude/CLAUDE.md` - Project-specific constraints

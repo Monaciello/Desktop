@@ -9,7 +9,16 @@
   services.syncthing = {
     enable = true;
     user = "sasha";
-    dataDir = "/home/sasha";
+    dataDir = "/home/sasha/Sync";
     configDir = "/home/sasha/.config/syncthing";
+  };
+
+  systemd.services.syncthing.serviceConfig = {
+    ProtectSystem = "strict";
+    PrivateTmp = true;
+    PrivateDevices = true;
+    NoNewPrivileges = true;
+    RestrictSUIDSGID = true;
+    LockPersonality = true;
   };
 }

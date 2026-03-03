@@ -1,0 +1,34 @@
+Use `src/` layout:
+```
+project/
+├── pyproject.toml       # Dependencies + pytest config
+├── src/mypackage/       # Implementation
+│   ├── __init__.py
+│   └── module.py
+└── tests/               # Tests mirror src/
+    ├── __init__.py      # Important: makes tests a package
+    └── test_module.py
+```
+
+## TDD Workflow
+
+1. **Red**: Write failing test that defines expected behavior
+2. **Green**: Write minimal code to make test pass
+3. **Refactor**: Improve code quality (tests protect correctness)
+
+```python
+# Red: Define what create_user should do
+def test_user_has_email_after_creation():
+    user = create_user("test@example.com")
+    assert user.email == "test@example.com"
+
+# Green: Minimal implementation
+def create_user(email):
+    return User(email=email)
+
+# Refactor: Add validation (tests still pass)
+def create_user(email):
+    if "@" not in email:
+        raise ValueError("Invalid email")
+    return User(email=email)
+```

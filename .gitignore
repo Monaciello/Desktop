@@ -17,3 +17,6 @@ sops.key
 .envrc
 *.swp
 *~
+
+# Docs (local reference only)
+/docs

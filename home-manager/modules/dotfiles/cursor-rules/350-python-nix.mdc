@@ -1,0 +1,25 @@
+---
+description: "Python project Nix environments: devShells, packaging, uv integration, cross-platform"
+globs: ["**/flake.nix", "**/shell.nix", "**/shells/**/*.nix"]
+alwaysApply: false
+---
+
+# Python + Nix Integration
+
+Bridge Python ecosystem (uv, pyproject.toml) with Nix reproducibility (flakes, devShells).
+
+## First Principles
+
+@import ./350-python-nix/principles.mdc
+
+## Canonical Pattern
+
+@import ./350-python-nix/pattern.mdc
+
+## System Dependencies & Troubleshooting
+
+@import ./350-python-nix/troubleshooting.mdc
+
+## Anti-Pattern: No `with` Statements
+
+Defer to `400-nix-guide.mdc` — never use `with pkgs;` or `with lib;`.

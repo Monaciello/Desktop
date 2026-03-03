@@ -1,0 +1,32 @@
+---
+description: "Python testing: pytest conventions, TDD workflow, fixtures, parametrize"
+globs: ["**/tests/**/*.py", "**/test_*.py", "**/*_test.py", "**/conftest.py"]
+alwaysApply: false
+---
+
+# Python Testing with pytest
+
+Write fast, reliable, maintainable tests. Tests are executable documentation.
+
+## First Principles
+
+@import ./150-python-testing/principles.mdc
+
+## Project Structure & TDD Workflow
+
+@import ./150-python-testing/structure-workflow.mdc
+
+## Test Patterns
+
+@import ./150-python-testing/patterns.mdc
+
+## Fixtures & Mocking
+
+@import ./150-python-testing/fixtures-mocking.mdc
+
+## Key Principles
+
+- **Fast tests**: Mock external services (APIs, databases, filesystems)
+- **Independent**: No shared state between tests (each can run alone)
+- **Readable**: Test name explains what's tested
+- **Type hints**: Add to fixtures for better IDE support

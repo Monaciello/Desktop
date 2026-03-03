@@ -1,0 +1,57 @@
+```python
+import pytest
+
+# Fixture with teardown (runs after test)
+@pytest.fixture
+def db_session():
+    session = create_test_db_session()
+    yield session  # Test runs here
+    session.close()  # Cleanup
+
+# Fixtures compose (inject fixtures into fixtures)
+@pytest.fixture
+def user(db_session):
+    user = User("test@example.com")
+    db_session.add(user)
+    db_session.commit()
+    return user
+
+def test_user_can_be_retrieved(db_session, user):
+    retrieved = db_session.query(User).filter_by(id=user.id).first()
+    assert retrieved.email == user.email
+```
+
+**Fixture Scopes**
+- `function` (default): Fresh setup per test (use for most tests)
+- `class`: Once per test class (rare)
+- `module`: Once per file (expensive resources shared across file)
+- `session`: Once per test run (database connection pool)
+
+**Mocking with pytest-mock**
+
+```python
+def test_api_call_retries_on_failure(mocker):
+    mock_get = mocker.patch("mymodule.requests.get")
+    mock_get.side_effect = [ConnectionError(), {"status": "ok"}]
+    
+    result = fetch_data()
+    
+    assert mock_get.call_count == 2
+    assert result == {"status": "ok"}
+```
+
+**Type Hints on Fixtures**
+
+```python
+from typing import Generator
+import pytest
+
+@pytest.fixture
+def user() -> Generator[User, None, None]:
+    user = User("test@example.com")
+    yield user
+    # cleanup if needed
+
+def test_user_email(user: User) -> None:
+    assert user.email == "test@example.com"
+```

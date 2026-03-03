@@ -19,7 +19,6 @@ in
       disable_ligatures = "never";
       clipboard_control = "write-clipboard write-primary no-append";
 
-      shell = "tmux";
       editor = "nvim";
       enable_audio_bell = false;
       allow_remote_control = true;

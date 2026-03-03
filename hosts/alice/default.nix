@@ -2,6 +2,7 @@
 { ... }:
 {
   imports = [
+    ../common
     ./hardware-configuration.nix
     ./secrets.nix
     ./boot.nix
@@ -12,6 +13,7 @@
     ./packages.nix
     ./fonts.nix
     ./1password.nix
+    ./virtualization.nix
     ./desktop
     ./hardware
     ./services

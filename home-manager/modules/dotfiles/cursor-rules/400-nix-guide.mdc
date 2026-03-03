@@ -1,0 +1,33 @@
+---
+name: nix-guidelines
+description: Use when writing Nix code for flakes, modules, or packages
+---
+
+# Nix Guidelines: Idioms for flakes, modules, and packages
+
+> **Be explicit. Be reproducible. Be cross-platform.**
+
+## When to Use
+
+- Writing/editing `flake.nix`
+- Making Nix/NixOS/Home Manager modules
+- Building Nix packages or overlays
+- Reviewing Nix PRs/patches
+
+## No `with` Statements — Ever
+
+@import ./400-nix-guide/core-principles.mdc
+
+## Flake & Module Structure
+
+@import ./400-nix-guide/structure.mdc
+
+## Cross-Platform Patterns
+
+@import ./400-nix-guide/cross-platform.mdc
+
+## Anti-Patterns & Best Practices
+
+@import ./400-nix-guide/checklist-validation.mdc
+
+> Verbosity is a **feature**: code is machine-parseable and always self-documenting.
