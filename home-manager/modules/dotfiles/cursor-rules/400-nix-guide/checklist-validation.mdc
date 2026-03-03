@@ -1,0 +1,48 @@
+### Never use rec:
+
+```nix
+# ❌ rec { a = 1; b = a + 1; }
+# ✅
+let a = 1; in { inherit a; b = a + 1; }
+```
+
+### Never destructure with `with`:
+
+```nix
+# ❌ args: with args; stdenv.mkDerivation { ... }
+# ✅ { stdenv, fetchurl, ... }: stdenv.mkDerivation { ... }
+```
+
+## Best Practice Checklist
+
+```markdown
+- [x] No `with`
+- [x] Explicit destructuring
+- [x] nixfmt-rfc-style formatting
+- [x] Namespaced options
+- [x] Prefer let-in over rec
+- [x] Platform guards for Linux/Darwin-specific deps
+- [x] No hardcoded `/home/` paths — use `config.home.homeDirectory`
+- [x] Multi-system support (all 4 platforms unless explicit constraint)
+- [x] lib.mkIf/mkMerge for conditions
+- [x] Assert for validation
+```
+
+## Validation
+
+```bash
+nix flake check           # Lint/test flake
+nixfmt-rfc-style .        # Format code
+nix eval .#packages.x86_64-linux.default
+nix flake show            # Show outputs
+```
+
+## Common Option Types
+
+```nix
+lib.types.bool | lib.types.str | lib.types.int
+lib.types.package | lib.types.listOf type
+lib.types.attrsOf type | lib.types.path
+lib.types.nullOr type | lib.types.enum [...]
+lib.types.submodule { ... }
+```

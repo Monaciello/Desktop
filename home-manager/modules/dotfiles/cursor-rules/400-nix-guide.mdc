@@ -3,255 +3,31 @@ name: nix-guidelines
 description: Use when writing Nix code for flakes, modules, or packages
 ---
 
-# 📝 Nix Guidelines: Idioms for flakes, modules, and packages
+# Nix Guidelines: Idioms for flakes, modules, and packages
 
 > **Be explicit. Be reproducible. Be cross-platform.**
 
----
-
-## 🧐 When?
+## When to Use
 
 - Writing/editing `flake.nix`
 - Making Nix/NixOS/Home Manager modules
 - Building Nix packages or overlays
 - Reviewing Nix PRs/patches
 
----
+## No `with` Statements — Ever
 
-## 🛑 No `with` Statements — Ever
+@import ./400-nix-guide/core-principles.mdc
 
-**Why:**  
-- Breaks static tooling (`nixd`, `nil`)  
-- Hides scope/causes IDE completion failures  
-- Reduces code readability
+## Flake & Module Structure
 
-```nix
-# ❌ BAD
-environment.systemPackages = with pkgs; [ git vim ];
-meta = with lib; { license = licenses.mit; };
-# ✅ GOOD
-environment.systemPackages = [ pkgs.git pkgs.vim ];
-meta = { license = lib.licenses.mit; };
-```
+@import ./400-nix-guide/structure.mdc
 
----
+## Cross-Platform Patterns
 
-## ✨ Core Principles
+@import ./400-nix-guide/cross-platform.mdc
 
-```markdown
-- Explicit > Implicit attribute paths
-- Pure, declarative functional design
-- Use let-in, never rec
-- Format: `nixfmt-rfc-style`
-- Destructure args, never use `with`
-```
+## Anti-Patterns & Best Practices
 
----
-
-## 🔲 Flake Structure Visual
-
-```markdown
-flake.nix
-├── inputs (flake-parts, nixpkgs, ...)
-├── outputs:
-    ├── systems = [all 4 platforms]
-    ├── perSystem:
-    │    ├── devShells.default    # development shell
-    │    ├── packages.default     # main package/build
-    └── flake.nixosConfigurations
-```
-
-```nix
-{
-  description = "...";
-  inputs = {
-    nixpkgs.url = "...";
-    flake-parts.url = "...";
-    home-manager = {
-      url = "...";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-  };
-  outputs = { self, nixpkgs, flake-parts, ... }@inputs:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
-      perSystem = { pkgs, ... }: {
-        devShells.default = pkgs.mkShell { nativeBuildInputs = [ pkgs.git ]; };
-        packages.default = pkgs.hello;
-      };
-      flake.nixosConfigurations.myhost = nixpkgs.lib.nixosSystem { modules = [ ./configuration.nix ]; };
-    };
-}
-```
-
----
-
-## 🧩 Module Structure
-
-```nix
-{ lib, config, pkgs, ... }:
-let cfg = config.mySpace.myModule;
-in {
-  options.mySpace.myModule = {
-    enable = lib.mkEnableOption "...";
-    package = lib.mkOption {
-      type = lib.types.package; default = pkgs.example; description = "...";
-    };
-    settings = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str; default = {}; description = "...";
-    };
-  };
-  config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-    assertions = [{ assertion = cfg.settings != {}; message = "Settings can't be empty"; }];
-  };
-}
-```
-
----
-
-## 📋 Best Practice Checklist
-
-```markdown
-- [x] No `with`
-- [x] Explicit destructuring
-- [x] nixfmt-rfc-style formatting
-- [x] Namespaced options
-- [x] Prefer let-in over rec
-- [x] Platform guards for Linux/Darwin-specific deps
-- [x] No hardcoded `/home/` paths — use `config.home.homeDirectory`
-- [x] Multi-system support (all 4 platforms unless explicit constraint)
-- [x] lib.mkIf/mkMerge for conditions
-- [x] Assert for validation
-```
-
----
-
-## 🏗️ Patterns
-
-### Conditional Config
-
-```nix
-config = lib.mkMerge [
-  (lib.mkIf cfg.enable { services.x.enable = true; })
-  (lib.mkIf (cfg.enable && cfg.monitoring.enable) { services.prometheus.exporters.x.enable = true; })
-  { services.x.port = lib.mkDefault 8080; }
-];
-```
-
-### Cross-Platform Systems
-
-```nix
-systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
-```
-
-### Platform-native deps
-
-```nix
-nativeBuildInputs = [
-  pkgs.python313 pkgs.uv
-] ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.stdenv.cc.cc.lib pkgs.zlib ]
-  ++ lib.optionals pkgs.stdenv.isDarwin [
-    pkgs.darwin.apple_sdk.frameworks.Security
-    pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
-  ];
-```
-
-### Platform-conditional config
-
-```nix
-let isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
-    homeDir = config.home.homeDirectory;
-in
-config = lib.mkMerge [
-  { programs.git.enable = true; }
-  (lib.mkIf pkgs.stdenv.isLinux { home.packages = [ pkgs.zathura ]; })
-  (lib.mkIf isDarwin { home.file.".config/app".source = "${homeDir}/Library/..."; })
-];
-```
-
-### Canonical Examples in Desktop Flake
-
-These files demonstrate correct cross-platform patterns:
-
-- `shells/default.nix` — `isLinux` guard for FHS shell
-- `home-manager/programs/git.nix` — Platform-conditional 1Password paths
-- `home-manager/programs/ssh.nix` — Platform-conditional SSH agent socket
-- `home-manager/modules/zsh.nix` — Platform-split aliases (`pbcopy` vs `wl-copy`)
-- `home-manager/modules/lf.nix` — Platform-conditional file opener (`open` vs `xdg-open`)
-
-Refer to these when unsure how to guard platform-specific code.
-
-### Derivation
-
-```nix
-{ lib, stdenv, fetchurl, openssl }:
-stdenv.mkDerivation {
-  pname = "mypkg"; version = "1.0";
-  src = fetchurl { url = "..."; sha256 = lib.fakeSha256; };
-  buildInputs = [ openssl ];
-  meta = { description = "Demo"; license = lib.licenses.mit; };
-}
-```
-
----
-
-## 🚫 Avoid These!
-
-### Never use rec:
-
-```nix
-# ❌ rec { a = 1; b = a + 1; }
-# ✅
-let a = 1; in { inherit a; b = a + 1; }
-```
-
-### Never destructure with `with`:
-
-```nix
-# ❌ args: with args; stdenv.mkDerivation { ... }
-# ✅ { stdenv, fetchurl, ... }: stdenv.mkDerivation { ... }
-```
-
----
-
-## 📊 Visualization: How Platform Patterns Flow
-
-```markdown
-graph TD
-    flake.nix --> devShell
-    devShell --> pkgs.python3XX
-    devShell --> pkgs.uv
-    pyproject.toml --> uv
-    uv --> .venv
-    shellHook --> uv
-    shellHook --> venv-activation
-```
-
----
-
-## 🔬 Validation/Dev
-
-```bash
-nix flake check           # Lint/test flake
-nixfmt-rfc-style .        # Format code
-nix eval .#packages.x86_64-linux.default
-nix flake show            # Show outputs
-```
-
----
-
-## 🔖 Common Option Types
-
-```nix
-lib.types.bool | lib.types.str | lib.types.int
-lib.types.package | lib.types.listOf type
-lib.types.attrsOf type | lib.types.path
-lib.types.nullOr type | lib.types.enum [...]
-lib.types.submodule { ... }
-```
-
----
+@import ./400-nix-guide/checklist-validation.mdc
 
 > Verbosity is a **feature**: code is machine-parseable and always self-documenting.
-

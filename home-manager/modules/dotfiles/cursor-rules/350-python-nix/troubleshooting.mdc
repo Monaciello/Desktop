@@ -1,0 +1,31 @@
+When `uv sync` fails with "missing library" errors:
+
+| Python Package | Linux Libs | Darwin Libs |
+|----------------|------------|-------------|
+| `numpy`, `scipy` | `blas`, `lapack` | Same |
+| `cryptography` | `openssl`, `libffi` | Same + `Security` framework |
+| `lxml` | `libxml2`, `libxslt` | Same |
+| `pillow` | `libjpeg`, `zlib` | Same |
+| `psycopg2` | `postgresql` | Same |
+
+Find missing libs: `nix-locate -w libfoo.so`
+
+## Common Mistakes
+
+| ❌ Wrong | Why It Breaks | ✅ Right |
+|---------|---------------|---------|
+| `import <nixpkgs>` in shell.nix | Impure, different nixpkgs per machine | Use flakes with locked inputs |
+| `python3.withPackages (ps: [ps.requests])` | Mixes Nix and Python package management | Use `uv add requests` |
+| `shellHook = "uv venv && uv sync"` | Creates new venv on every `nix develop` | Check `if [ ! -d .venv ]` first |
+| Hardcoded `python311` | Prevents upgrades | Use latest stable (`python313`) |
+| `buildInputs = [pkgs.python313]` | Wrong attribute for devShell | Use `packages = [pkgs.python313]` |
+
+## Verification
+
+```bash
+nix flake check                # Validate flake syntax
+nix develop                    # Enter shell
+python --version               # Should match flake.nix version
+uv --version                   # Should be available
+python -c "import requests"    # Verify deps installed
+```

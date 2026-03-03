@@ -1,0 +1,6 @@
+- Adding `--impure` without documenting why
+- Modifying files outside scope constraints
+- Committing unencrypted secrets
+- Using `lib.mkForce` without justification
+- Creating new hosts without approval
+- Declaring a warning "transitive/upstream" without actually tracing it to a file first

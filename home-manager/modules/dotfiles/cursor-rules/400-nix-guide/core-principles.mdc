@@ -1,0 +1,23 @@
+**Why:**  
+- Breaks static tooling (`nixd`, `nil`)  
+- Hides scope/causes IDE completion failures  
+- Reduces code readability
+
+```nix
+# ❌ BAD
+environment.systemPackages = with pkgs; [ git vim ];
+meta = with lib; { license = licenses.mit; };
+# ✅ GOOD
+environment.systemPackages = [ pkgs.git pkgs.vim ];
+meta = { license = lib.licenses.mit; };
+```
+
+## Core Principles
+
+```markdown
+- Explicit > Implicit attribute paths
+- Pure, declarative functional design
+- Use let-in, never rec
+- Format: `nixfmt-rfc-style`
+- Destructure args, never use `with`
+```

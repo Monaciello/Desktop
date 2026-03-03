@@ -1,0 +1,20 @@
+**Why src/ Layout**
+- Prevents accidental imports from local source (tests run against installed package)
+- Forces proper package installation in editable mode
+- Catches import errors that would break in production
+
+**Why One Assert Per Test**
+- Test failures pinpoint exact issue (no "which assertion failed?")
+- Each test has single, clear purpose
+- Easier to skip/xfail individual behaviors
+
+**Why Fixtures (not setUp/tearDown)**
+- Composable: fixtures can use other fixtures
+- Explicit: test signature shows dependencies
+- Scoped: control when setup/teardown runs
+- Modular: share fixtures via conftest.py
+
+**Why TDD (Red-Green-Refactor)**
+- Red: test defines behavior contract before implementation exists
+- Green: minimal code to pass (prevents over-engineering)
+- Refactor: safe cleanup with tests guarding correctness

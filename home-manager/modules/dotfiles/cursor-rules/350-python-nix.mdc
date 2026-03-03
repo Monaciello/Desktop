@@ -6,69 +6,20 @@ alwaysApply: false
 
 # Python + Nix Integration
 
-## Core Rules
+Bridge Python ecosystem (uv, pyproject.toml) with Nix reproducibility (flakes, devShells).
 
-1. **Flakes only** — No `import <nixpkgs>`. All Python projects use flakes with `flake-parts`.
-2. **uv is exclusive** — Never `pip`, `poetry`, or `pip-tools`. `pyproject.toml` is the single source of truth.
-3. **Nix provides the shell** — devShells supply interpreter + system libs only. Python deps come from `uv`.
-4. **Cross-platform** — Support Linux and Darwin with `lib.optionals`.
+## First Principles
 
-## Minimal Pattern
+@import ./350-python-nix/principles.mdc
 
-```nix
-{
-  description = "Python project";
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-  };
-  outputs = { flake-parts, ... }@inputs:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
-      perSystem = { pkgs, lib, ... }: {
-        devShells.default = pkgs.mkShell {
-          packages = [
-            pkgs.python313
-            pkgs.uv
-          ] ++ lib.optionals pkgs.stdenv.isLinux [
-            pkgs.stdenv.cc.cc.lib  # libstdc++
-            pkgs.zlib
-          ] ++ lib.optionals pkgs.stdenv.isDarwin [
-            pkgs.darwin.apple_sdk.frameworks.Security
-          ];
-          shellHook = ''
-            uv sync
-            source .venv/bin/activate
-          '';
-        };
-      };
-    };
-}
-```
+## Canonical Pattern
 
-## What Goes Where
+@import ./350-python-nix/pattern.mdc
 
-| Managed by | File |
-|------------|------|
-| Python package versions | `pyproject.toml` |
-| System libs (C deps) | `flake.nix` |
-| Python interpreter version | `flake.nix` |
-| Virtual environment | `.venv/` (gitignored) |
+## System Dependencies & Troubleshooting
 
-## Common System Deps
+@import ./350-python-nix/troubleshooting.mdc
 
-| Python Package | Nix Libs |
-|----------------|----------|
-| `numpy`, `scipy` | `pkgs.blas`, `pkgs.lapack` |
-| `cryptography` | `pkgs.openssl`, `pkgs.libffi` |
-| `lxml` | `pkgs.libxml2`, `pkgs.libxslt` |
-| `pillow` | `pkgs.libjpeg`, `pkgs.zlib` |
-| `psycopg2` | `pkgs.postgresql` |
+## Anti-Pattern: No `with` Statements
 
-## Verification
-
-```bash
-nix flake check           # Validate
-nix develop               # Enter shell
-python --version && uv --version
-```
+Defer to `400-nix-guide.mdc` — never use `with pkgs;` or `with lib;`.

@@ -6,82 +6,27 @@ alwaysApply: false
 
 # Python Testing with pytest
 
-## Project Structure
+Write fast, reliable, maintainable tests. Tests are executable documentation.
 
-Use `src/` layout:
-```
-project/
-├── pyproject.toml
-├── src/mypackage/
-│   └── module.py
-└── tests/
-    └── test_module.py
-```
+## First Principles
 
-## TDD Workflow
+@import ./150-python-testing/principles.mdc
 
-**Red → Green → Refactor**
-1. Write failing test (Red)
-2. Minimal implementation (Green)
-3. Improve quality (Refactor)
+## Project Structure & TDD Workflow
+
+@import ./150-python-testing/structure-workflow.mdc
 
 ## Test Patterns
 
-### Naming
-```python
-def test_user_can_be_created_with_valid_email():
-    user = create_user("test@example.com")
-    assert user.email == "test@example.com"
-```
-Pattern: `test_<unit>_<scenario>_<expected>`
+@import ./150-python-testing/patterns.mdc
 
-### One Assert Per Test
-```python
-# ✅ Good
-def test_user_email_is_set():
-    assert create_user("test@example.com").email == "test@example.com"
+## Fixtures & Mocking
 
-def test_user_id_is_generated():
-    assert create_user("test@example.com").id is not None
-```
-
-### Fixtures Over setUp
-```python
-import pytest
-
-@pytest.fixture
-def db_session():
-    session = create_test_db_session()
-    yield session
-    session.close()
-
-def test_user_save(db_session):
-    user = User("test@example.com")
-    db_session.add(user)
-    assert user.id is not None
-```
-
-### Parametrize for Data
-```python
-@pytest.mark.parametrize("input,expected", [
-    (1, 2), (2, 3), (0, 1)
-])
-def test_increment(input, expected):
-    assert increment(input) == expected
-```
-
-### Mocking
-```python
-def test_api_retry(mocker):
-    mock_get = mocker.patch("mymodule.requests.get")
-    mock_get.side_effect = [ConnectionError(), {"status": "ok"}]
-    result = fetch_data()
-    assert mock_get.call_count == 2
-```
+@import ./150-python-testing/fixtures-mocking.mdc
 
 ## Key Principles
 
-- Keep tests fast — mock external services
-- Independent tests — no shared state
-- Fixtures for reusable setup (prefer `function` scope)
-- Type hints on fixtures
+- **Fast tests**: Mock external services (APIs, databases, filesystems)
+- **Independent**: No shared state between tests (each can run alone)
+- **Readable**: Test name explains what's tested
+- **Type hints**: Add to fixtures for better IDE support

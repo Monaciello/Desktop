@@ -1,0 +1,27 @@
+When integrating skarabox, follow `nix-starter-configs-skarabox` pattern:
+
+```
+<hostname>/
+├── configuration.nix    # References secrets, NOT encrypted
+├── secrets.yaml         # Encrypted with BOTH host + main keys
+├── facter.json
+├── hostid
+├── host_key.pub
+├── ssh.pub
+├── ip
+├── ssh_port
+└── ssh_boot_port
+```
+
+SOPS dual-key structure:
+```yaml
+keys:
+  - &hostname age1<from-host-key>
+  - &main age1<personal-key>
+creation_rules:
+  - path_regex: <hostname>/secrets.yaml
+    key_groups:
+      - age:
+          - *hostname
+          - *main
+```

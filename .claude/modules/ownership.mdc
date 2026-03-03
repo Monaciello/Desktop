@@ -1,0 +1,9 @@
+| Path | Owner | Notes |
+|------|-------|-------|
+| `flake.nix` | Ask first | Core structure |
+| `flake.lock` | Never touch | Use `nix flake update` |
+| `hosts/alice/hardware-configuration.nix` | Never touch | Generated |
+| `hosts/alice/*.nix` | May modify | System config |
+| `home-manager/**` | May modify | User config |
+| `shells/` | May modify | Dev environments |
+| `*.yaml` in secrets | Never touch | Encrypted |

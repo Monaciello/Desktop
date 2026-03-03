@@ -1,0 +1,20 @@
+Before declaring any change complete — **in this order**:
+
+```bash
+git add -A                        # MUST stage first — Nix evaluates git tree,
+                                  # stale store paths mask your actual edits
+nix flake check 2>&1 | grep -v "^warning: Git"
+nixfmt --check <modified-files>
+```
+
+**SSH / 1Password rule**: SSH keys live in 1Password, never on disk. The agent
+config at `~/.config/1Password/ssh/agent.toml` must include the correct vaults
+(currently: infra, Private, Personal). SSH commands will silently fail with
+`Permission denied` unless `~/.1password/agent.sock` is live, 1Password GUI is
+running, and `SSH_AUTH_SOCK` is set. Always verify:
+```bash
+export SSH_AUTH_SOCK=~/.1password/agent.sock
+ssh-add -l   # must list "OCI ssh" key before any ssh/nixos-anywhere invocation
+```
+**OCI note**: The oci-claw instance uses the "OCI ssh" key from the 1Password
+infra vault. The old `sasha@alice` key is lost — do not reference it.

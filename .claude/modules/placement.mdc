@@ -1,0 +1,8 @@
+```
+System service/daemon  -> hosts/alice/services/*.nix
+System package         -> hosts/alice/packages.nix
+User GUI app          -> home-manager/packages/apps.nix
+User CLI tool         -> home-manager/packages/cli.nix
+Dev tool              -> shells/default.nix
+Font                  -> hosts/alice/fonts.nix
+```

@@ -1,0 +1,14 @@
+When `nix flake check` emits evaluation warnings:
+
+1. **Stage first**: `git add -A` — warnings from stale store paths are misleading
+2. **Isolate source**: check `homeConfigurations` and `nixosConfigurations` separately
+   ```bash
+   nix eval '.#homeConfigurations."sasha@alice".activationPackage' 2>&1 | grep "warning"
+   nix eval '.#nixosConfigurations.alice.config.system.build.toplevel' 2>&1 | grep "warning"
+   ```
+3. **Trace to file**: use `nix eval --raw 'nixpkgs#path'` then `rg` in the nixpkgs store
+4. **Classify before fixing**:
+   - Our code → fix directly
+   - Upstream nixpkgs derivation → `lib.warn` fires at evaluation time, overlays
+     **cannot** intercept it; document as upstream TODO and file PR
+   - Do NOT attempt >1 overlay strategy without first confirming where `lib.warn` is called
