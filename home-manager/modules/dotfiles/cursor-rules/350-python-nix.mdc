@@ -1,0 +1,170 @@
+# 🐍 + ❄️ Python × Nix: Reproducible Dev Environments
+
+## 🎯 What You Do
+- Bridge Python (uv, pyproject.toml) & Nix (flakes/devShells) for cross-platform, hermetic dev environments.
+- Always prefer Python-specific best-practices over generic Nix ones.
+
+---
+
+## 🏷️ When Does This Apply?
+- Editing `flake.nix`, any project `shell.nix`, or `*/shells/**/*.nix` in Python projects.
+- **NEVER** use `import <nixpkgs>`, always use flakes.
+
+---
+
+## 📦 Flake Setup — Visualized
+
+```
+project/
+├── flake.nix         # ← All logic here, flake-parts
+├── pyproject.toml    # ← Only for Python deps!
+├── uv.lock           # ← Commit this for lock!
+├── .venv/            # ← Never commit, gitignore it
+├── src/
+```
+
+---
+
+## 🟢 Minimal Flake.nix (Pattern)
+```nix
+{
+  description = "My Python App";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+  };
+  outputs = { flake-parts, ... }@inputs:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [
+        "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin"
+      ];
+      perSystem = { pkgs, lib, ... }: {
+        devShells.default = pkgs.mkShell {
+          packages = [
+            pkgs.python313 pkgs.uv
+          ]
+          ++ lib.optionals pkgs.stdenv.isLinux [
+            pkgs.stdenv.cc.cc.lib pkgs.zlib pkgs.libffi
+          ]
+          ++ lib.optionals pkgs.stdenv.isDarwin [
+            pkgs.darwin.apple_sdk.frameworks.Security
+            pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
+            pkgs.libiconv
+          ];
+          shellHook = ''
+            if [ ! -d .venv ]; then uv sync; fi
+            source .venv/bin/activate
+            export PYTHONPATH="$PWD/src:$PYTHONPATH"
+          '';
+        };
+      };
+    };
+}
+```
+- 🟡 **Never:** Use `with pkgs;` or `.withPackages`.
+
+---
+
+## 🚫 Common Python-in-Nix Mistakes
+
+| ❌ Wrong                            | Why                | ✅ Correct              |
+| ----------------------------------- | ------------------ | ---------------------- |
+| `import <nixpkgs>`/`shell.nix`      | Not reproducible   | Flake-only             |
+| `buildInputs` in `devShell`         | Not used on flake  | `packages = [...]`     |
+| `.withPackages` / manual pip        | Impure, brittle    | `uv add ...`           |
+| `pip install ...` in `shellHook`    | Untracked, impure  | `uv sync`              |
+
+---
+
+## ⚙️ Role Separation
+
+- **Nix** = system/CPython/OS libs, pins everything
+- **uv**  = Python deps (<span style="color:gray">(from pyproject.toml)</span>)
+- Don’t repeat Python dependencies in Nix.
+
+---
+
+## 🧬 Platform Support
+
+- Support these 4 always:
+  - `x86_64-linux`, `aarch64-linux`, `aarch64-darwin`, `x86_64-darwin`
+- Add system libs only as needed for each platform.
+
+```
+# Pattern
+packages = [
+  pkgs.python313 pkgs.uv
+] ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.stdenv.cc.cc.lib pkgs.zlib ]
+  ++ lib.optionals pkgs.stdenv.isDarwin [ pkgs.darwin.apple_sdk.frameworks.Security ];
+```
+
+- Refer to cheatsheet when `uv sync` fails:
+  - cryptography: `pkgs.openssl` `pkgs.libffi`
+  - lxml: `pkgs.libxml2`, `pkgs.libxslt`
+  - numpy: `pkgs.blas`, `pkgs.lapack`, `pkgs.gfortran`
+
+---
+
+## 🔄 The `uv` Workflow (always inside `nix develop`)
+
+```bash
+uv sync                 # (1st time or change, handled by shellHook)
+uv add requests         # update deps
+uv add --dev pytest     # dev deps
+source .venv/bin/activate
+uv run pytest           # runs anywhere, venv or not
+```
+
+---
+
+## 🧪 devShell Quality Checklist
+
+- [ ] `flake.nix` uses `flake-parts` and targets all 4 platforms.
+- [ ] Only add Python interpreter (`python3XX`) & `uv` in shell.
+- [ ] gitignore `.venv`, commit `uv.lock`.
+- [ ] No `buildInputs`/`withPackages`/`with`/legacy `shell.nix`.
+- [ ] `shellHook` only idempotently runs `uv sync`.
+- [ ] All system library deps are platform-guarded.
+- [ ] `nix flake check` + `nix develop` work OOTB.
+
+---
+
+## 🐞 Debugging lib issues
+
+- If Python install fails, find missing .so with:
+  ```
+  nix-locate -w libfoo.so
+  ```
+  …then add the matching `pkgs.*` lib to your `packages`.
+
+---
+
+## 🚦 Deviation Allowed?
+- Only for upstream `nixpkgs` contributions or explicitly grandfathered legacy projects.
+- Otherwise: **flakes required, always.**
+
+---
+
+## 📝 Visual Summary
+
+```
+graph TD
+    flake.nix --> devShell
+    devShell --> pkgs.python3XX
+    devShell --> pkgs.uv
+    devShell --> system-libs
+    devShell --> shellHook
+    pyproject.toml --> uv
+    uv --> .venv
+    shellHook --> uv
+    shellHook --> venv-activation
+```
+
+---
+
+**Recall:**  
+- Nix = lock platform libs/interpreter.
+- `uv` = all Python deps (and only `uv`).
+- Never merge package management. Flake + uv + shellHook do all the work!
+
+

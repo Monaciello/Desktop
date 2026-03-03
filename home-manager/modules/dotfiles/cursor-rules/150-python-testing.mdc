@@ -1,0 +1,145 @@
+---
+description: "Python testing: idiomatic pytest, TDD, fixtures, parametrize"
+globs: ["**/tests/**/*.py", "**/test_*.py", "**/*_test.py", "**/conftest.py"]
+alwaysApply: false
+---
+
+# 🧪 Pytest Testing Guide
+
+Concise rules for fast, reliable, maintainable Python tests.
+
+---
+
+## 🗂️ Typical Project Layout
+
+```markdown
+project/
+├── pyproject.toml
+├── src/
+│   └── mypackage/
+└── tests/
+    └── test_*.py
+```
+
+---
+
+## 🔁 TDD Loop (Red ➔ Green ➔ Refactor)
+
+```markdown
+- Write a failing test (Red)
+- Get it to pass quickly (Green)
+- Improve code/tests, keep passing (Refactor)
+```
+
+---
+
+## 🏷️ Test Naming
+
+- Use `test_<unit>_<scenario>_<expected>`
+- Readable names tell the story
+
+```python
+def test_user_can_signup_given_valid_email(): ...
+def test_fails_signup_with_invalid_email(): ...
+```
+
+---
+
+## ☝️ One Behavior Per Test
+
+```python
+# Good
+def test_user_email_is_set(): ...
+def test_user_id_is_generated(): ...
+
+# Not Good (Too much in one)
+def test_user_creation(): ...
+```
+
+---
+
+## 🧩 Fixtures
+
+- Use `@pytest.fixture`
+- Prefer function scope for isolation
+- Compose fixtures by injecting into others
+- Use `yield` for setup/teardown
+
+```python
+import pytest
+
+@pytest.fixture
+def db_session():
+    sess = create_test_db_session()
+    yield sess
+    sess.close()
+```
+
+---
+
+## 🔢 Data-Driven Parametrization
+
+```python
+import pytest
+
+@pytest.mark.parametrize("a,b,expected", [(1,2,3), (2,3,5)])
+def test_add(a, b, expected):
+    assert add(a, b) == expected
+```
+
+---
+
+## 🤖 Mocking
+
+- Use `mocker` fixture (`pytest-mock`)
+- Patch dependencies, set side effects
+
+```python
+def test_external_call(mocker):
+    fake = mocker.patch("mymodule.remote_call")
+    fake.return_value = 42
+    assert do_something() == 42
+```
+
+---
+
+## 💡 Type Hints
+
+- Type your fixtures and test functions
+
+```python
+from typing import Generator
+
+@pytest.fixture
+def user() -> Generator[User, None, None]: ...
+def test_user(user: User) -> None: ...
+```
+
+---
+
+## 📊 Principles Checklist
+
+```markdown
+- [x] Each test: one clear purpose, one main assertion
+- [x] Avoid shared state; tests are independent
+- [x] Use fixtures for setup, yield for cleanup
+- [x] Parametrize to avoid code duplication
+- [x] Mock I/O or external APIs for speed
+```
+
+---
+
+## 🏷️ Pattern Summary
+
+```markdown
+test_<unit>_<scenario>_<expected>
+```
+- Use readable, descriptive test names
+- Place tests in `tests/`, match `test_*.py`
+- Prefer fixtures over setup/teardown classes
+- Use `pytest.mark.parametrize` for data-sets
+- Mock with `pytest-mock`'s `mocker`
+
+---
+
+> ✨ Keep tests simple, focused, fast. Use these idioms everywhere.
