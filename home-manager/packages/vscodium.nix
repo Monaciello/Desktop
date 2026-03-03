@@ -11,20 +11,20 @@ in
     mutableExtensionsDir = false;
 
     profiles.default = {
-      extensions = with pkgs.vscode-extensions; [
-        continue.continue # AI chat, inline edits, completion (Cursor-like)
-        jnoortheen.nix-ide
-        ms-pyright.pyright
-        ms-toolsai.jupyter
-        eamodio.gitlens
-        mhutchie.git-graph
-        github.vscode-pull-request-github
-        redhat.vscode-yaml
-        timonwong.shellcheck
-        streetsidesoftware.code-spell-checker
-        njpwerner.autodocstring
-        usernamehw.errorlens
-        oderwat.indent-rainbow
+      extensions = [
+        pkgs.vscode-extensions.continue.continue
+        pkgs.vscode-extensions.jnoortheen.nix-ide
+        pkgs.vscode-extensions.ms-pyright.pyright
+        pkgs.vscode-extensions.ms-toolsai.jupyter
+        pkgs.vscode-extensions.eamodio.gitlens
+        pkgs.vscode-extensions.mhutchie.git-graph
+        pkgs.vscode-extensions.github.vscode-pull-request-github
+        pkgs.vscode-extensions.redhat.vscode-yaml
+        pkgs.vscode-extensions.timonwong.shellcheck
+        pkgs.vscode-extensions.streetsidesoftware.code-spell-checker
+        pkgs.vscode-extensions.njpwerner.autodocstring
+        pkgs.vscode-extensions.usernamehw.errorlens
+        pkgs.vscode-extensions.oderwat.indent-rainbow
       ];
 
       userSettings = {

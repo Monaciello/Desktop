@@ -17,9 +17,9 @@ python3.pkgs.buildPythonPackage rec {
 
   doCheck = false;
 
-  meta = with lib; {
+  meta = {
     description = "Makes Python tracebacks easier to see";
     homepage = "https://github.com/nir0s/backtrace";
-    license = licenses.asl20;
+    license = lib.licenses.asl20;
   };
 }

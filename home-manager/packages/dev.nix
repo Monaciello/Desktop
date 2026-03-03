@@ -1,17 +1,17 @@
 { pkgs, ... }:
 {
-  home.packages = with pkgs; [
-    sops
-    age
-    ssh-to-age
-    python313
-    shellcheck
-    ruff
-    black
-    bats
-    nixd
-    nixfmt-rfc-style
-    statix
-    rust-analyzer
+  home.packages = [
+    pkgs.sops
+    pkgs.age
+    pkgs.ssh-to-age
+    pkgs.python313
+    pkgs.shellcheck
+    pkgs.ruff
+    pkgs.black
+    pkgs.bats
+    pkgs.nixd
+    pkgs.nixfmt-rfc-style
+    pkgs.statix
+    pkgs.rust-analyzer
   ];
 }
