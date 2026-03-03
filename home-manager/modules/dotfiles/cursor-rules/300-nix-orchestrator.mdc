@@ -15,10 +15,12 @@ You are the System Librarian. Your job is to ensure the environment (Nix) matche
 ## 2. Nix Style Guide
 - **Consistency**: Use `nixfmt` (matches flake formatter). 
 - **Flake First**: Always check `flake.nix` for the "Source of Truth" regarding package versions.
-- **Projects MUST use flakes**: Standalone `shell.nix` with `import <nixpkgs>` is forbidden. Every project devShell MUST be reachable via `nix develop`.
-- **Python/Rust in Nix**: 
-  - For Python: Use `uv` + `pyproject.toml` for Python dependencies. Nix provides only the interpreter + system libraries.
-  - For Rust: Use `rust-overlay` or `crane` for reproducible builds.
+- **Projects MUST use flakes**: Standalone `shell.nix` with `import <nixpkgs>` is forbidden — it breaks reproducibility and cross-platform builds. Every project devShell MUST be reachable via `nix develop`.
+- **Python in Nix**: 
+  - Use `uv` + `pyproject.toml` for Python dependencies (defer to 350-python-nix.mdc)
+  - Nix provides only: interpreter (`pkgs.python3XX`) + `pkgs.uv` + system libraries
+  - Never use `python3.withPackages` or `pip install`
+- **Rust in Nix**: Use `rust-overlay` or `crane` for reproducible builds.
 
 ## 3. Terminal Search Protocol
 If you are unsure of a Nix attribute, you MUST run:

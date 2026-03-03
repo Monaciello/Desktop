@@ -118,10 +118,11 @@ in {
 - [x] nixfmt-rfc-style formatting
 - [x] Namespaced options
 - [x] Prefer let-in over rec
-- [x] Platform guards for {Linux,Darwin}
+- [x] Platform guards for Linux/Darwin-specific deps
+- [x] No hardcoded `/home/` paths — use `config.home.homeDirectory`
+- [x] Multi-system support (all 4 platforms unless explicit constraint)
 - [x] lib.mkIf/mkMerge for conditions
 - [x] Assert for validation
-- [x] Use config.home.homeDirectory
 ```
 
 ---
@@ -168,6 +169,18 @@ config = lib.mkMerge [
   (lib.mkIf isDarwin { home.file.".config/app".source = "${homeDir}/Library/..."; })
 ];
 ```
+
+### Canonical Examples in Desktop Flake
+
+These files demonstrate correct cross-platform patterns:
+
+- `shells/default.nix` — `isLinux` guard for FHS shell
+- `home-manager/programs/git.nix` — Platform-conditional 1Password paths
+- `home-manager/programs/ssh.nix` — Platform-conditional SSH agent socket
+- `home-manager/modules/zsh.nix` — Platform-split aliases (`pbcopy` vs `wl-copy`)
+- `home-manager/modules/lf.nix` — Platform-conditional file opener (`open` vs `xdg-open`)
+
+Refer to these when unsure how to guard platform-specific code.
 
 ### Derivation
 
