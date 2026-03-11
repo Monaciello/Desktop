@@ -2,13 +2,12 @@
   description = "Desktop — NixOS + nix-darwin configurations";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     flake-parts.url = "github:hercules-ci/flake-parts";
 
-    home-manager.url = "github:nix-community/home-manager/release-25.11";
+    home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     nix-darwin.url = "github:LnL7/nix-darwin";
@@ -20,7 +19,7 @@
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
     # Cursor IDE (desktop) — pinned tag, auto-updated 3x/week by upstream CI
-    code-cursor-nix.url = "github:jacopone/code-cursor-nix/v2.5.20";
+    code-cursor-nix.url = "github:jacopone/code-cursor-nix/v2.6.18";
   };
 
   outputs =

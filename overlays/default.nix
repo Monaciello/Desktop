@@ -25,14 +25,14 @@
         libXfixes = prev.libxfixes;
         libXrandr = prev.libxrandr;
         libxcb = prev.libxcb;
+        lndir = prev.lndir;
       };
     };
   };
 
-  # When applied, the unstable nixpkgs set (declared in the flake inputs) will
-  # be accessible through 'pkgs.unstable'
+  # When applied, the unstable nixpkgs set will be accessible through 'pkgs.unstable'
   unstable = final: _prev: {
-    unstable = import inputs.nixpkgs-unstable {
+    unstable = import inputs.nixpkgs {
       system = final.stdenv.hostPlatform.system;
       config.allowUnfree = true;
     };
