@@ -32,7 +32,6 @@ in
 
       "nuc" = {
         hostname = "nuc";
-        user = "";
         port = 2222;
         extraOptions = {
           UserKnownHostsFile = "${inclusiveBlocksDir}/nuc/known_hosts";
