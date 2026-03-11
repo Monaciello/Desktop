@@ -82,6 +82,6 @@
     extraLuaPackages = ps: [ ps.magick ];
 
     # Lua configuration
-    extraLuaConfig = builtins.readFile ./dotfiles/init.lua;
+    initLua = builtins.readFile ./dotfiles/init.lua;
   };
 }

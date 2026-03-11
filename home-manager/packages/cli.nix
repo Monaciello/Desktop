@@ -2,6 +2,7 @@
 { pkgs, ... }:
 {
   home.packages = [
+    pkgs.starship
     pkgs.tmux
     pkgs.eza
     pkgs.bat

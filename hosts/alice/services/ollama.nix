@@ -4,12 +4,12 @@
 {
   services.ollama = {
     enable = true;
-    acceleration = false;
+    package = pkgs.ollama-cpu;
     loadModels = [
       "qwen2.5-coder:7b"   # Chat, inline edits
       "qwen2.5-coder:1.5b" # Autocomplete
     ];
   };
 
-  environment.systemPackages = [ pkgs.ollama ];
+  environment.systemPackages = [ pkgs.ollama-cpu ];
 }

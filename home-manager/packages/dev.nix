@@ -10,7 +10,7 @@
     pkgs.black
     pkgs.bats
     pkgs.nixd
-    pkgs.nixfmt-rfc-style
+    pkgs.nixfmt
     pkgs.statix
     pkgs.rust-analyzer
   ];

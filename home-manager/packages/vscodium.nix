@@ -30,7 +30,7 @@ in
       userSettings = {
         "nix.serverPath" = "${pkgs.nixd}/bin/nixd";
         "nix.enableLanguageServer" = true;
-        "nix.formatterPath" = "${pkgs.nixfmt-rfc-style}/bin/nixfmt";
+        "nix.formatterPath" = "${pkgs.nixfmt}/bin/nixfmt";
 
         "terminal.integrated.defaultProfile.${terminalPlatform}" = "zsh";
         "terminal.integrated.profiles.${terminalPlatform}" = {
