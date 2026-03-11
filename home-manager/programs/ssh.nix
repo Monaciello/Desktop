@@ -1,7 +1,3 @@
-# SSH configuration — wires 1Password SSH agent for key management
-#
-# The sasha key (used for OCI, git signing, etc.) lives in 1Password.
-# This module ensures all SSH sessions use the 1Password agent socket.
 { pkgs, ... }:
 let
   agentSock =
@@ -9,6 +5,8 @@ let
       "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
     else
       "~/.1password/agent.sock";
+
+  inclusiveBlocksDir = "~/Projects/InclusiveBlocks";
 in
 {
   programs.ssh = {
@@ -18,21 +16,45 @@ in
     matchBlocks = {
       "*" = {
         addKeysToAgent = "yes";
+        serverAliveInterval = 60;
+        serverAliveCountMax = 3;
         extraOptions = {
           IdentityAgent = agentSock;
+          ConnectTimeout = "10";
         };
       };
 
       "oci-claw" = {
-        hostname = "";
+        hostname = "placeholder.invalid";
         user = "sasha";
         port = 2222;
+      };
+
+      "nuc" = {
+        hostname = "nuc";
+        user = "";
+        port = 2222;
+        extraOptions = {
+          UserKnownHostsFile = "${inclusiveBlocksDir}/nuc/known_hosts";
+        };
       };
 
       "rpi4-01" = {
         hostname = "rpi4-01";
         user = "sasha";
         port = 2222;
+        extraOptions = {
+          UserKnownHostsFile = "${inclusiveBlocksDir}/rpi4-01/known_hosts";
+        };
+      };
+
+      "rpi4-01-wan" = {
+        hostname = "192.168.1.108";
+        user = "sasha";
+        port = 2222;
+        extraOptions = {
+          UserKnownHostsFile = "${inclusiveBlocksDir}/rpi4-01/known_hosts";
+        };
       };
     };
   };

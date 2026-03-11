@@ -11,7 +11,7 @@
 #
 # CURRENTLY EMPTY: All your home-manager config is in:
 #   - home-manager/home.nix (main user config)
-#   - home-manager/modules/ (i3, kitty, neovim, etc.)
+#   - home-manager/modules/ (Sway, kitty, neovim, etc.)
 # This is the correct place for personal config.
 #
 # Usage from other flakes:

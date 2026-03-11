@@ -62,7 +62,7 @@
   #   - programs/git.nix  -> gpg.ssh.program = op-ssh-sign
 
   # Note: For fingerprint unlock, ensure polkit agent is running
-  # i3 users: start polkit agent in i3 config or via systemd user service
+  # Sway/Wayland users: start polkit agent in Sway config or via systemd user service
   # systemd.user.services.polkit-gnome = {
   #   description = "PolicyKit Authentication Agent";
   #   wantedBy = [ "graphical-session.target" ];

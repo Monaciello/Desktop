@@ -160,7 +160,7 @@ in
               local match
               match=$(find "$dir" -maxdepth 1 \( -name "$1" -o -name "$1.*" \) -not -name wallpaper | head -1)
               if [ -n "$match" ]; then
-                cp "$match" "$dir/wallpaper" && i3 restart && echo "Wallpaper set to $1"
+                cp "$match" "$dir/wallpaper" && swaymsg reload && echo "Wallpaper set to $1"
               else
                 echo "Wallpaper '$1' not found"
               fi ;;
