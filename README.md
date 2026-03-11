@@ -4,44 +4,36 @@ Cross-platform Nix configuration for NixOS (`alice`) and macOS (`macbook`). Base
 
 ## Architecture
 
-```
-flake.nix
-├── hosts/alice/        # SYSTEM: hardware, boot, services
-├── home-manager/       # USER: dotfiles, user apps
-│   ├── modules/        # i3, kitty, neovim, rofi, zsh
-│   └── programs/       # git, tmux
-├── shells/             # PROJECT: dev environments
-├── pkgs/               # Custom packages
-└── overlays/           # Package modifications
-```
+For an overview of the directory structure and role of each folder/file, see `flake.nix` and the subdirectories:
+- `hosts/alice/` — system-level configuration (hardware, boot, services)
+- `home-manager/` — user dotfiles and user applications:
+  - `modules/` (Sway, kitty, neovim, rofi, zsh modules; see files within)
+  - `programs/` (git, tmux module definitions)
+- `shells/` — project/dev environment shells (see example: `shells/default.nix`)
+- `pkgs/` — custom package definitions
+- `overlays/` — package modifications
 
 ## Design Principles
 
-- **Layer separation:** System (nixos-rebuild) | User (home-manager) | Project (nix develop)
-- **Single shell:** Xonsh everywhere - Python superset for shell and scripts
-- **Declarative:** No manual plugin managers, symlinks, or pip installs
-- **Reproducible:** Pinned flake.lock -> hermetic builds -> immutable /nix/store
+- **Layer separation:** See `flake.nix` for delineating system (nixos-rebuild), user (home-manager), and project (nix develop) layers.
+- **Single shell:** Xonsh is configured as the primary shell in relevant user modules (e.g., `home-manager/modules/zsh.nix`).
+- **Declarative:** Package/plugin managers are declared in Nix modules, e.g., see `home-manager/modules/neovim.nix`—no symlink or pip installs.
+- **Reproducible:** Build reproducibility is established by the use of a pinned `flake.lock` (see root), ensuring hermetic builds in `/nix/store`.
 
 ## Completed (2026-01-26 20:00 EST)
 
-Phases 0-2 established a working i3 workstation with declarative configuration.
-
-**Expected behavior:**
-- i3wm launches on login with kitty terminal, rofi launcher, i3blocks status bar
-- Neovim opens with lazy.nvim plugins, LSP support pending
-- Xonsh shell with eza/bat aliases, rebuild/hms shortcuts
-- GTK theme (Adapta-Nokto) applied system-wide
-- tmux with declarative plugins (no TPM)
-- devShells available via `nix develop`
+Phases 0–2 established a working Sway workstation, fully declaratively configured. Example behaviors and where to look:
+- Sway, terminal, rofi, waybar: see `home-manager/modules/` for configs
+- Neovim plugin setup: `home-manager/modules/neovim.nix`
+- Shell aliases: `home-manager/modules/zsh.nix`
+- Theming: `home-manager/modules/gtk.nix`
+- tmux plugin management: `home-manager/modules/tmux.nix`
+- Dev shells: see `shells/`
 
 ## Current Phase: Documentation & Validation
 
-Focus: Clean up docs, ensure flake builds without errors.
-
-```bash
-nix flake check
-nix build .#nixosConfigurations.alice.config.system.build.vm
-```
+Focus: Clean up docs; verify the flake builds cleanly.  
+For sample build and validation invocations, inspect the `flake.nix` outputs and try building targets like `.nixosConfigurations.alice` or refer to flake commands in the documentation.
 
 ## Action Items
 
@@ -50,206 +42,148 @@ nix build .#nixosConfigurations.alice.config.system.build.vm
 | 1 | Add fallback DE (xfce4) | `hosts/alice/packages.nix` |
 | 2 | Add autorandr | `hosts/alice/packages.nix` |
 | 3 | Test uv venv + prompt | `shells/` |
-| 4 | ~~Document gup alias risks~~ | migrated to zsh.nix |
-| 5 | ~~Document webup alias~~ | migrated to zsh.nix (localhost-only) |
-| 6 | ~~Remove unused command_output()~~ | removed with xonsh migration |
+| 4 | ~~Document gup alias risks~~ | See `home-manager/modules/zsh.nix` |
+| 5 | ~~Document webup alias~~ | See `home-manager/modules/zsh.nix` (localhost-only) |
+| 6 | ~~Remove unused command_output()~~ | Xonsh migration (see related shell modules) |
 | 7 | Add LSPs (nixd, pyright) | `home-manager/modules/neovim.nix` |
 | 8 | Update Obsidian vault path | `home-manager/modules/dotfiles/init.lua` |
-| 9 | Test image.nvim | manual verification |
-| 10 | Configure vanilla keybindings | see `docs/keybindings.md` |
+| 9 | Test image.nvim | See `home-manager/modules/neovim.nix` |
+| 10 | Configure vanilla keybindings | See docs in `docs/Desktop/` (keybindings)
 
 ## Roadmap
 
 ### Phase 4: Multi-Host Prep
-- Extract common config to `hosts/common/`
-- Re-add deploy-rs input, `nix flake check` green
+- *Extract common configuration:* see `hosts/common/`
+- *Green flake check:* See goals in `flake.nix`, use `nix flake check`
 
 ### Phase 5: Skarabox + SHB (openclaw P0–P2)
-- Add skarabox + selfhostblocks inputs
-- Scaffold first server host (`nix run .#gen-new-host`)
-- Forgejo via `shb.forgejo` (git remote for rollback)
-- Tailscale firewall hardened, Nginx + Authelia SSO
-- See `docs/deployment/skarabox-deployment-guide.md`
+- Inputs and server host scaffolding: See `flake.nix` for adding new hosts.
+- Forgejo & SHB: See `docs/Desktop/deployment/skarabox-deployment-guide.md`.
 
 ### Phase 5b: VM Isolation (openclaw P3)
-- microvm.nix replaces libvirtd
-- agent-gateway VM declared in flake
+- See `microvm.nix` (incoming) replacing libvirtd for VMs
 
 ### Phase 6: OpenClaw (openclaw P4–P6)
-- SOPS agent secrets (`secrets/agent.yaml`)
-- Scout-DJ openclaw-nix module
-- Ollama local inference
-- See `docs/openclaw/master-guide.md`
+- SOPS/agent secrets: see `secrets/agent.yaml`
+- Openclaw modules: See `docs/Desktop/openclaw/master-guide.md`
 
 ### Phase 7: Observability + OCI (openclaw P7–P9)
-- Prometheus/Grafana/Loki via SHB
-- OCI ARM companion host
-- Security hardening sweep
+- Monitoring and observability: See `docs/Desktop/reference/`
 
 ## Bootstrap New macOS Machine
 
 ### Prerequisites
 
-1. **Install Nix** (multi-user installation):
-   ```bash
-   sh <(curl -L https://nixos.org/nix/install)
-   ```
+1. **Install Nix:**  
+   See official install instructions, or refer to the install script at [nixos.org](https://nixos.org/download.html).
 
-2. **Enable flakes** (if not already enabled):
-   ```bash
-   mkdir -p ~/.config/nix
-   echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-   ```
+2. **Enable flakes:**  
+   To enable flakes, edit `~/.config/nix/nix.conf` as documented in (Nix flake documentation).
 
-3. **Install Xcode Command Line Tools** (required for nix-darwin):
-   ```bash
-   xcode-select --install
-   ```
+3. **Install Xcode CL Tools:**  
+   See Apple's documentation.
 
-4. **Clone this repository**:
-   ```bash
-   mkdir -p ~/Projects
-   git clone https://github.com/Monaciello/Desktop.git ~/Projects/Desktop
-   cd ~/Projects/Desktop
-   ```
+4. **Clone this repository:**  
+   Create a `~/Projects` directory, then clone this repo into `~/Projects/Desktop` (see any standard git clone step).
 
 ### First-Time Activation
 
-```bash
-# Bootstrap nix-darwin (first time only)
-nix run nix-darwin -- switch --flake ~/Projects/Desktop#macbook
-```
+For first-time nix-darwin activation, see usage of the `nix run nix-darwin ...` command as shown in the examples and in docs (`docs/Desktop/setup/`).
 
-This will:
-- Install nix-darwin system configuration
-- Set up Homebrew via nix-homebrew
-- Install GUI apps (1Password, Firefox, Cursor, etc.) as Homebrew casks
-- Configure system defaults (Dock, Finder, trackpad, keyboard)
-- Enable Touch ID for sudo
-- Set up home-manager with cross-platform dotfiles
+Summary:
+- Installs nix-darwin config
+- Sets up Homebrew via nix-homebrew (see `hosts/macbook/homebrew.nix`)
+- Installs GUI apps as casks (see config in `hosts/macbook/homebrew.nix`)
+- Sets system defaults and sudo Touch ID (see `hosts/macbook/default.nix`)
+- Sets up home-manager and user dotfiles (see `home-manager/`)
 
 ### Subsequent Rebuilds
 
-After the initial bootstrap, use:
-
-```bash
-darwin-rebuild switch --flake ~/Projects/Desktop#macbook
-
-# Or use the shell alias (after first rebuild):
-rebuild
-```
+For rebuilding, see:
+- `darwin-rebuild` command as captured in the shell and in documentation (`docs/Desktop/`)
+- Custom shell aliases (see `home-manager/modules/zsh.nix` for `rebuild` alias)
 
 ### What Gets Installed
 
-**Via Nix (system packages):**
-- Development tools: `python313`, `uv`, `git`, `neovim`, `kitty`
-- CLI tools: `eza`, `bat`, `ripgrep`, `fzf`, `zoxide`, `btop`
-- Shell: `zsh` with `starship` prompt
+**Via Nix:**  
+Review `hosts/macbook/default.nix` and `home-manager/modules/` for:
+- Dev tools (defined under `environment.systemPackages`)
+- CLI tools (see consolidated list in home-manager modules)
+- Shell with prompt: see `home-manager/modules/zsh.nix` and starship config
 
-**Via Homebrew (GUI apps):**
-- 1Password, Firefox, Discord, Obsidian, VLC, Anki, Telegram, Cursor
+**Via Homebrew (GUI apps):**  
+Check the list at `hosts/macbook/homebrew.nix`
 
-**Dotfiles (cross-platform):**
-- `zsh`, `neovim`, `kitty`, `tmux`, `git`, `lf`, `ssh`
-- Platform-aware aliases (e.g., `xc` → `pbcopy` on macOS, `wl-copy` on Linux)
+**Dotfiles:**  
+Review `home-manager/modules/` for Neovim, kitty, tmux, git config, lf, ssh; see platform-aware aliases in relevant shell modules.
 
 ### Customization
 
-1. **Change hostname:**
-   Edit `hosts/macbook/default.nix`:
-   ```nix
-   networking.hostName = "your-hostname";
-   ```
+1. **Change hostname:**  
+   Edit `networking.hostName` in `hosts/macbook/default.nix` (see full option structure in that file).
 
-2. **Add/remove Homebrew casks:**
-   Edit `hosts/macbook/homebrew.nix`:
-   ```nix
-   casks = [ "app-name" ];
-   ```
+2. **Add/remove Homebrew casks:**  
+   Update the `casks = [ ... ]` list in `hosts/macbook/homebrew.nix`.
 
-3. **Modify system settings:**
-   Edit `hosts/macbook/default.nix` under `system.defaults.*`
+3. **Modify system settings:**  
+   Edit `system.defaults.*` fields in `hosts/macbook/default.nix`.
 
 ## Commands
 
-### NixOS (alice)
-```bash
-sudo nixos-rebuild switch --flake ~/.config/nixos#alice  # Rebuild system
-home-manager switch --flake ~/.config/nixos#sasha@alice  # Rebuild home
-```
+- **For NixOS (`alice`):**
+  - See usage in the documentation and `flake.nix` for `nixos-rebuild switch --flake ...`
+  - For home-manager, review invocation in `flake.nix` and docs
 
-### macOS (macbook)
-```bash
-darwin-rebuild switch --flake ~/Projects/Desktop#macbook  # Rebuild system
-```
+- **For macOS (`macbook`):**
+  - Use `darwin-rebuild switch --flake ...` as shown in the documentation
 
-### Cross-Platform
-```bash
-nix develop .#dev              # Dev shell
-nix flake check                # Validate
-nix fmt                        # Format
-```
+- **Cross-Platform:**  
+  - Dev shells: see examples in `shells/`
+  - Validation/formatting: refer to `flake.nix` outputs and any formatting scripts
 
 ## Adding Packages
 
-```bash
-# 1. Check if already defined
-grep -r "packageName" --include="*.nix" .
+1. **Check if package is already defined:**  
+   Use grep or your favorite search tool to look for `"packageName"` in `*.nix` files.
 
-# 2. Add to correct location
-# System service -> hosts/alice/*.nix
-# User tool -> home-manager/packages/*.nix
-# Dev tool -> shells/default.nix
+2. **Add to correct location:**  
+   - System package: add in `hosts/alice/*.nix`
+   - User tool: add in `home-manager/packages/*.nix`
+   - Dev tool: add in `shells/default.nix`
 
-# 3. Rebuild
-sudo nixos-rebuild switch --flake .#alice
-```
+3. **Rebuild as needed:**  
+   - Step through rebuild as shown in this README and referenced `nixos-rebuild`, `darwin-rebuild`, or `home-manager switch` flows.
 
 ## Adding Home-Manager Module
 
-```bash
-# 1. Create module
-nvim home-manager/modules/newmodule.nix
+1. **Create new module file:**  
+   Add `newmodule.nix` to `home-manager/modules/`
 
-# 2. Import in home-manager/modules/all.nix
-imports = [ ./newmodule.nix ];
+2. **Import in module aggregator:**  
+   Add to the `imports` array in `home-manager/modules/all.nix`
 
-# 3. Stage and rebuild
-git add home-manager/modules/newmodule.nix
-home-manager switch --flake .#sasha@alice
-```
+3. **Stage and rebuild:**  
+   Follow documented git flow and rebuild using a `home-manager` invocation as above.
 
 ## Troubleshooting
 
-```bash
-git add -A                              # Flake not seeing changes
-nix flake check --show-trace            # Module errors
-home-manager switch -b backup           # File conflicts
-sudo nixos-rebuild switch --rollback    # System recovery
-```
+- If changes aren't picked up, ensure you've staged/saved files and try `git add -A`.
+- For module errors, invoke `nix flake check --show-trace` for debug info.
+- For file conflicts, try `home-manager switch -b backup` for safe switching.
+- For system recovery, see the rollback flow with `nixos-rebuild --rollback`.
 
 ## Documentation
 
-```
-docs/
-├── wip.md                                    # Sprint tracker
-├── migration/
-│   └── skarabox.md                           # Skarabox migration status
-├── deployment/
-│   ├── skarabox-deployment-guide.md          # Vol 3: Skarabox + SHB reference
-│   └── skarabox-setup-instructions.md        # Adding a server host
-├── setup/
-│   ├── sops-setup.md                         # SOPS age encryption setup
-│   ├── 1password-sops-integration.md         # 1Password + SOPS
-│   ├── 1password-quick-reference.md          # 1Password quick ref
-│   └── cursor-packaging-guide.md             # Cursor packaging
-├── openclaw/
-│   └── master-guide.md                       # OpenClaw × NixOS × Skarabox P0–P9 guide
-└── reference/
-    ├── nix-types-networking-reference.md     # Vol 1: Nix types + networking
-    ├── nix-types-vol2-extended-recipes.md    # Vol 2: Extended recipes
-    └── aliases-and-services.md               # Shell aliases and service map
-```
+**Most documentation has moved to `~/Projects/docs/Desktop/`.** For navigation and entry points, see `docs/README.md` in the repo.
 
-- `.claude/AI.md` - AI assistant guardrails
-- `.claude/CLAUDE.md` - Project-specific constraints
+Key example doc files:
+- `docs/Desktop/wip.md` — Sprint tracker
+- `docs/Desktop/migration/skarabox.md` — Skarabox migration info
+- `docs/Desktop/deployment/skarabox-deployment-guide.md` — Skarabox deployment
+- `docs/Desktop/setup/sops-setup.md` — SOPS encryption setup
+- `docs/Desktop/openclaw/master-guide.md` — OpenClaw guides and modules
+- `docs/Desktop/reference/` — Extended Nix recipes, config role matrix, shell/service alias map, etc.
+
+Further AI and project constraints:  
+- `.claude/AI.md` — AI assistant guardrails  
+- `.claude/CLAUDE.md` — Project-specific constraints

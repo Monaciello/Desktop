@@ -18,7 +18,7 @@ let a = 1; in { inherit a; b = a + 1; }
 ```markdown
 - [x] No `with`
 - [x] Explicit destructuring
-- [x] nixfmt-rfc-style formatting
+- [x] nixfmt formatting
 - [x] Namespaced options
 - [x] Prefer let-in over rec
 - [x] Platform guards for Linux/Darwin-specific deps
@@ -32,7 +32,7 @@ let a = 1; in { inherit a; b = a + 1; }
 
 ```bash
 nix flake check           # Lint/test flake
-nixfmt-rfc-style .        # Format code
+nixfmt .                  # Format code
 nix eval .#packages.x86_64-linux.default
 nix flake show            # Show outputs
 ```

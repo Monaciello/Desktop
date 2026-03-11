@@ -7,11 +7,25 @@ alwaysApply: false
 
 When building features with AI agents, write a **spec** before code. Specs eliminate guesswork and give agents a clear contract.
 
+## Session Discipline
+
+**Start a fresh agent session for each task (T1, T2, etc.).** Do not carry implementation state across tasks — accumulated context causes drift, hallucination, and silent regressions. One task, one session, one commit.
+
 ## When to Use
 
 - Starting a new feature (3+ files, 30+ min)
 - Agent keeps guessing wrong approach
 - Need to pause, review, or hand off mid-feature
+
+## Sizing
+
+| Scale | Files | Spec length | Tasks |
+|-------|-------|-------------|-------|
+| Small | 1–3 | ~20 lines | 1–2 |
+| Medium | 4–10 | ~40 lines | 2–4 |
+| Large | 10+ | Split into multiple linked specs | 4+ |
+
+If a single spec exceeds ~60 lines or 5 tasks, split it.
 
 ## Spec Structure
 
@@ -20,24 +34,45 @@ When building features with AI agents, write a **spec** before code. Specs elimi
 ## Why — Problem being solved
 ## What — Concrete deliverable
 ## Constraints — Must / Must Not / Out of Scope
-## Current State — Relevant files, patterns
-## Tasks — T1, T2... each with What, Files, Verify
-## Validation — End-to-end checks
+## Context — Relevant files, patterns, decisions
+## Tasks — T1, T2... each with Do, Files, Verify
+## Done — End-to-end checks
 ```
 
 ## Workflow
 
 1. **Generate spec** — Use `.ai/templates/spec.md`, save to `.ai/specs/<feature-slug>.md`
-2. **Review & refine** — Ensure decisions are yours
+2. **Review & refine** — Ensure decisions are yours, not the agent's
 3. **Execute one task** — Fresh session: "Read .ai/specs/X.md and implement T1"
 4. **Verify, review, commit** — Run verify step, human review, commit
-5. **Repeat** for each task
+5. **Repeat** — New session for each subsequent task
 
 ## Task Rules
 
-- **Fresh context per task** — New session avoids context rot
+- **Fresh context per task** — New session per TN; never carry state forward
 - **Small tasks** — <3 files, <30 min each
-- **Verify mandatory** — Every task needs: `command` or `Manual: [specific check]`
+- **Verify mandatory** — Every task needs a concrete verify step (see below)
+- **Commit boundary** — Each task should be safe to commit independently
+
+## Verification Standards
+
+Every task's `Verify:` must be **specific and observable** — not "verify it works."
+
+**Prefer commands:**
+- `nix flake check` / `nix build .#package`
+- `pytest tests/test_feature.py -k test_name`
+- `curl -s localhost:8080/health | jq .status`
+- `systemctl status service-name`
+- `nix eval .#nixosConfigurations.host.config.services.X.enable`
+
+**Manual checks must specify action and expected result:**
+- "Navigate to /settings, toggle dark mode, confirm background changes to #1e1e2e"
+- "SSH to host, run `journalctl -u service -n 5`, confirm no errors in last 5 entries"
+- "Open browser devtools Network tab, submit form, confirm 201 response with `id` field"
+
+**Anti-patterns (reject these):**
+- "Verify it works" / "Test the feature" / "Check the output"
+- "Make sure nothing is broken" / "Confirm no regressions"
 
 ## Rules vs Specs
 

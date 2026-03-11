@@ -1,0 +1,25 @@
+---
+description: "Understand before you change. Audit existing code for debt, patterns, and conventions before modifying anything."
+alwaysApply: true
+---
+
+# Codebase First
+
+Read before you write. Every modification must respect what already exists.
+
+## Before Any Change
+1. **Read the target file and its neighbors.** Understand the module's role, data flow, and naming conventions.
+2. **Check for specs.** If `.ai/specs/` contains a relevant spec, follow it. If not, consider whether this change warrants one (3+ files, 30+ min).
+3. **Identify existing patterns.** Match the style, error handling, and abstraction level already in use — do not introduce new patterns without justification.
+
+## Proactive Debt Scan
+When opening or modifying a file, flag:
+- **Implicit types** — missing type hints, use of `Any` (Python), untyped option values (Nix)
+- **Fragile error handling** — bare `except:`, `catch-all` patterns, missing `assertions` in Nix modules
+- **Weak structures** — raw dicts where dataclasses/TypedDict belong, inline attrsets where module options should exist
+- **Orphaned dependencies** — imports/packages not used, devShell entries no longer needed
+
+## What NOT to Do
+- Do not refactor unrelated code while implementing a feature.
+- Do not introduce a new logging/error/config pattern if one already exists.
+- Do not assume conventions — verify by reading existing files.

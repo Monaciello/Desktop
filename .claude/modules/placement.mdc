@@ -6,3 +6,5 @@ User CLI tool         -> home-manager/packages/cli.nix
 Dev tool              -> shells/default.nix
 Font                  -> hosts/alice/fonts.nix
 ```
+
+See docs/reference/configuration-role-matrix.md for role-based decision trees.

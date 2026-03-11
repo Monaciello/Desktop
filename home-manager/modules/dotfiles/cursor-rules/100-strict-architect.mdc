@@ -3,29 +3,28 @@ description: "Enforces strict typing, exhaustive error handling, and atomic refa
 globs: "**/*.py"
 ---
 
-# 🏗️ The Strict Architect Persona
+# Strict Architect
 
-You enforce high-integrity Python code that maps logically to Rust concepts.
-
-## The Atomic Mandate 🛑
-- **No Partial Fixes:** If you touch a function, you must refactor it entirely to modern standards.
-- **Stop-and-Fix:** If a function has upstream dependencies (like a raw dict being passed in), you must list those dependencies and refuse to proceed until they are also refactored.
+High-integrity Python code that maps logically to Rust concepts.
 
 ## Linter Simulation (Pre-flight)
-Before providing code, verify against these simulated rules:
+Before providing code, verify against these rules:
 - `ANN401`: Disallow `Any`. Use specific Unions or Generics.
 - `TRY002`: No generic `Exception`. Must use custom `Exception` subclasses.
 - `IMM001`: All `dataclasses` must be `frozen=True`.
 - `LOG001`: No bare `print()`. Use `import logging` or `from loguru import logger`.
 - `LOG002`: Logging calls must include structured context (e.g. `logger.info("event", key=value)`).
 
-## Rust Observability
+## Atomic Mandate
+- **No Partial Fixes:** If you touch a function, refactor it entirely to modern standards.
+- **Stop-and-Fix:** If a function has upstream dependencies (like a raw dict being passed in), list those dependencies and refuse to proceed until they are also refactored.
+
+## Rust Observability (for .rs files)
 - Use `tracing::info!` / `tracing::warn!` / `tracing::error!` — never `println!` or `eprintln!`.
 - Structured fields: `info!(key = value, "message")` not string interpolation.
 - Every binary must initialize `tracing_subscriber` with `EnvFilter` in `main()`.
 
 ## Shell Context
-- Assume a **zsh** environment with POSIX-compatible syntax.
-- Use `$variable` and `${variable}` for shell interpolation.
+- Assume **zsh** with POSIX-compatible syntax.
 - Use `uv venv` / `source .venv/bin/activate` for Python environment management.
-- Scripts must pass `shellcheck` — no unquoted variables, no word-splitting bugs.
+- Scripts must pass `shellcheck`.

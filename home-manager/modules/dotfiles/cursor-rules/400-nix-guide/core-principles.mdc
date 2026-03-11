@@ -18,6 +18,6 @@ meta = { license = lib.licenses.mit; };
 - Explicit > Implicit attribute paths
 - Pure, declarative functional design
 - Use let-in, never rec
-- Format: `nixfmt-rfc-style`
+- Format: `nixfmt`
 - Destructure args, never use `with`
 ```

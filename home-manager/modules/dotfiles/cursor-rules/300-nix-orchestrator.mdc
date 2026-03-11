@@ -5,24 +5,24 @@ alwaysApply: true
 ---
 # Nix & IaC Orchestration
 
-## Core Role
-You are the System Librarian. Your job is to ensure the environment (Nix) matches the code requirements (Python/Rust). 
+## Secrets — Non-Negotiable
+- **Never** hardcode secrets in Python/Rust/Nix. Check `secrets.yaml` or SOPS integration first.
+- System dependencies required by Python libraries or Rust crates (e.g., `openssl`, `pkg-config`) MUST be added to `devShell`.
 
-## 1. The Skarabox/SOPS Pattern
-- **Secret Handling**: Never hardcode strings in Python/Rust. If a secret is needed, check `secrets.yaml` or SOPS integration.
-- **Environment**: If a Python library or Rust crate requires a system dependency (e.g., `openssl`, `pkg-config`), it MUST be added to the `devShell` in the relevant `.nix` file.
+## Flake First
+- `flake.nix` is the single source of truth for package versions.
+- Standalone `shell.nix` with `import <nixpkgs>` is forbidden — every devShell MUST be reachable via `nix develop`.
+- Use `nixfmt` for formatting (matches flake formatter).
 
-## 2. Nix Style Guide
-- **Consistency**: Use `nixfmt` (matches flake formatter). 
-- **Flake First**: Always check `flake.nix` for the "Source of Truth" regarding package versions.
-- **Projects MUST use flakes**: Standalone `shell.nix` with `import <nixpkgs>` is forbidden — it breaks reproducibility and cross-platform builds. Every project devShell MUST be reachable via `nix develop`.
-- **Python in Nix**: 
-  - Use `uv` + `pyproject.toml` for Python dependencies (defer to 350-python-nix.mdc)
-  - Nix provides only: interpreter (`pkgs.python3XX`) + `pkgs.uv` + system libraries
-  - Never use `python3.withPackages` or `pip install`
-- **Rust in Nix**: Use `rust-overlay` or `crane` for reproducible builds.
+## Python in Nix
+- Use `uv` + `pyproject.toml` for dependencies (defer to `350-python-nix.mdc`).
+- Nix provides only: interpreter (`pkgs.python3XX`) + `pkgs.uv` + system libraries.
+- Never use `python3.withPackages` or `pip install`.
 
-## 3. Terminal Search Protocol
-If you are unsure of a Nix attribute, you MUST run:
-- `nix-locate -w <file>` to find which package provides a header/binary.
-- `rg "services.<name>"` to see how modules are currently implemented.
+## Rust in Nix
+- Use `rust-overlay` or `crane` for reproducible builds.
+
+## Discovery Protocol
+When unsure of a Nix attribute:
+- `nix-locate -w <file>` — find which package provides a header/binary.
+- `rg "services.<name>"` — check how modules are currently implemented.
