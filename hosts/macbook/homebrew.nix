@@ -8,9 +8,11 @@
 
   homebrew = {
     enable = true;
+    # Opinion: declarative flake rebuilds are the source of truth — avoid implicit brew updates.
+    # Use `brew update && brew upgrade` when you want latest casks. Cleanup is non-zap to avoid wiping unmanaged taps.
     onActivation = {
-      autoUpdate = true;
-      cleanup = "zap";
+      autoUpdate = false;
+      cleanup = true;
     };
 
     casks = [

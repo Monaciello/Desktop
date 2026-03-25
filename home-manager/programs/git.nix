@@ -1,5 +1,9 @@
 # Git configuration — uses 1Password SSH agent for commit signing
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  ...
+}:
 let
   homeDir = config.home.homeDirectory;
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
@@ -15,10 +19,14 @@ in
     signing = {
       key = "${homeDir}/.ssh/id_ed25519.pub";
       signByDefault = true;
+      # HM 25.05+: explicit format silences migration warning (we use SSH signing via 1Password)
+      format = "ssh";
     };
     settings = {
       user.name = "monaciello";
-      user.email = "tahgijones@gmail.com";
+      # Public GitHub noreply — avoids committing a private address. For other remotes or a real
+      # address, set `user.email` in ~/.config/git/config.local and use `include.path` (see HM docs).
+      user.email = "monaciello@users.noreply.github.com";
       gpg.format = "ssh";
       gpg."ssh".program = opSshSign;
     };

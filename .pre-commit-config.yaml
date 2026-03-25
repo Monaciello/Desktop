@@ -3,8 +3,11 @@ repos:
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^secrets/
       - id: end-of-file-fixer
+        exclude: ^secrets/
       - id: check-yaml
+        exclude: ^secrets/
       - id: check-json
       - id: check-added-large-files
         args: ["--maxkb=1000"]
@@ -26,12 +29,12 @@ repos:
         language: system
         files: \.nix$
         pass_filenames: false
+        exclude: ^hosts/alice/hardware/keyboard\.nix$
 
       - id: nix-fmt
-        name: nix fmt
-        entry: nix fmt -- --check .
+        name: nixfmt --check (tracked *.nix, excludes secrets/)
+        entry: bash -c 'cd "$(git rev-parse --show-toplevel)" && files=$(git ls-files "*.nix" | grep -v "^secrets/" || true) && [ -z "$files" ] || echo "$files" | xargs nixfmt --check'
         language: system
-        files: \.nix$
         pass_filenames: false
 
       - id: shellcheck

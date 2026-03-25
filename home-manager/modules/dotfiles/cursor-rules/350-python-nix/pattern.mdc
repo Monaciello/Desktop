@@ -1,46 +1,5 @@
-```nix
-{
-  description = "Python project";
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-  };
-  outputs = { flake-parts, ... }@inputs:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
-      
-      perSystem = { pkgs, lib, ... }: {
-        devShells.default = pkgs.mkShell {
-          packages = [
-            pkgs.python313  # Interpreter only
-            pkgs.uv         # Package manager only
-          ] ++ lib.optionals pkgs.stdenv.isLinux [
-            pkgs.stdenv.cc.cc.lib  # libstdc++ for C extensions
-            pkgs.zlib
-          ] ++ lib.optionals pkgs.stdenv.isDarwin [
-            pkgs.darwin.apple_sdk.frameworks.Security
-          ];
-          
-          shellHook = ''
-            # Idempotent: only create venv if missing
-            if [ ! -d .venv ]; then
-              uv sync
-            fi
-            source .venv/bin/activate
-          '';
-        };
-      };
-    };
-}
-```
+**Canonical:** @SnowSnake/flake.nix when in workspace (python + uv + platform libs + idempotent shellHook). Otherwise search for `pkgs.uv` in flake. Use nixos-mcp for `python313`, `uv`, `mkShell`.
 
-## Responsibility Matrix
+**Responsibility matrix:** Python packages → uv (`pyproject.toml`). Interpreter + system libs → Nix (`flake.nix`). Virtualenv → uv (`.venv/` gitignored).
 
-| Concern | Managed By | File | Committed? |
-|---------|------------|------|------------|
-| Python package versions | uv | `pyproject.toml` | ✅ |
-| Transitive dependency lock | uv | `uv.lock` | ✅ |
-| Interpreter version | Nix | `flake.nix` | ✅ |
-| System C libraries | Nix | `flake.nix` | ✅ |
-| Virtual environment | uv | `.venv/` | ❌ (gitignore) |
-| Nix input pins | Nix | `flake.lock` | ✅ |
+**Shell hook:** Idempotent — `if [ ! -d .venv ]; then uv sync; fi` then `source .venv/bin/activate`.

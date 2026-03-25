@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 let
   colors = import ./colors.nix;
 
@@ -106,6 +106,9 @@ in
       name = "Adapta-Nokto";
       package = pkgs.adapta-gtk-theme;
     };
+
+    # HM 26.05+: gtk4 theme default changed; keep GTK 3/4 aligned with our Adapta setup
+    gtk4.theme = config.gtk.theme;
 
     iconTheme = {
       name = "Papirus-Dark";

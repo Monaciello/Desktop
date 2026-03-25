@@ -1,44 +1,7 @@
-### Naming Convention
-`test_<unit>_<scenario>_<expected_behavior>`
+**Naming:** `test_<unit>_<scenario>_<expected_behavior>`
 
-```python
-def test_user_can_be_created_with_valid_email():
-    user = create_user("test@example.com")
-    assert user.email == "test@example.com"
+**One assert per test:** Each test has single purpose. Multiple assertions = unclear failure.
 
-def test_user_creation_fails_with_invalid_email():
-    with pytest.raises(ValueError):
-        create_user("not-an-email")
-```
+**Parametrize:** Use `@pytest.mark.parametrize` for data-driven tests.
 
-### One Assert Per Test
-
-```python
-# ✅ Good: Each test has single purpose
-def test_user_email_is_set():
-    user = create_user("test@example.com")
-    assert user.email == "test@example.com"
-
-def test_user_id_is_generated():
-    user = create_user("test@example.com")
-    assert user.id is not None
-
-# ❌ Bad: Multiple assertions = unclear failure
-def test_user_creation():
-    user = create_user("test@example.com")
-    assert user.email == "test@example.com"  # Which failed?
-    assert user.id is not None
-```
-
-### Parametrize for Data-Driven Tests
-
-```python
-@pytest.mark.parametrize("input,expected", [
-    (1, 2),
-    (2, 3),
-    (0, 1),
-    (-1, 0),
-])
-def test_increment(input, expected):
-    assert increment(input) == expected
-```
+**Lookup:** Use Serena to find existing test patterns in the codebase. Refer to pytest docs for fixtures and parametrize.

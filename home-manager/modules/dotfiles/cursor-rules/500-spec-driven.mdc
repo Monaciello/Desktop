@@ -29,19 +29,13 @@ If a single spec exceeds ~60 lines or 5 tasks, split it.
 
 ## Spec Structure
 
-```markdown
-# Feature Name
-## Why — Problem being solved
-## What — Concrete deliverable
-## Constraints — Must / Must Not / Out of Scope
-## Context — Relevant files, patterns, decisions
-## Tasks — T1, T2... each with Do, Files, Verify
-## Done — End-to-end checks
-```
+**Template:** `.ai/templates/spec.md` (or @Desktop/.ai/templates/spec.md when workspace is Projects)
+
+Sections: Why, What, Constraints, Context, Tasks (Do, Files, Verify), Done.
 
 ## Workflow
 
-1. **Generate spec** — Use `.ai/templates/spec.md`, save to `.ai/specs/<feature-slug>.md`
+1. **Generate spec** — Use template, save to `.ai/specs/<feature-slug>.md`
 2. **Review & refine** — Ensure decisions are yours, not the agent's
 3. **Execute one task** — Fresh session: "Read .ai/specs/X.md and implement T1"
 4. **Verify, review, commit** — Run verify step, human review, commit
@@ -51,33 +45,26 @@ If a single spec exceeds ~60 lines or 5 tasks, split it.
 
 - **Fresh context per task** — New session per TN; never carry state forward
 - **Small tasks** — <3 files, <30 min each
-- **Verify mandatory** — Every task needs a concrete verify step (see below)
+- **Verify mandatory** — Every task needs a concrete verify step
 - **Commit boundary** — Each task should be safe to commit independently
 
 ## Verification Standards
 
 Every task's `Verify:` must be **specific and observable** — not "verify it works."
 
-**Prefer commands:**
-- `nix flake check` / `nix build .#package`
-- `pytest tests/test_feature.py -k test_name`
-- `curl -s localhost:8080/health | jq .status`
-- `systemctl status service-name`
-- `nix eval .#nixosConfigurations.host.config.services.X.enable`
+**Prefer commands:** `nix flake check`, `pytest -k test_name`, `curl -s localhost:8080/health`, `systemctl status`, `nix eval .#...`
 
-**Manual checks must specify action and expected result:**
-- "Navigate to /settings, toggle dark mode, confirm background changes to #1e1e2e"
-- "SSH to host, run `journalctl -u service -n 5`, confirm no errors in last 5 entries"
-- "Open browser devtools Network tab, submit form, confirm 201 response with `id` field"
-
-**Anti-patterns (reject these):**
-- "Verify it works" / "Test the feature" / "Check the output"
-- "Make sure nothing is broken" / "Confirm no regressions"
+**Manual checks:** Specify action and expected result. Reject: "verify it works", "check the output", "confirm no regressions".
 
 ## Rules vs Specs
 
-| Rules (.cursor/rules) | Specs (.ai/specs) |
-|----------------------|-------------------|
+| Rules | Specs |
+|-------|-------|
 | Coding standards, personas | Feature contracts, tasks |
 | Always/glob-triggered | Per-feature, on demand |
 | "How to write code" | "What to build, what not to build" |
+
+## Specs vs Obsidian vault
+- **Specs for implementation** stay in **git:** `.ai/specs/<feature>.md` in the repo whose code changes (Desktop, RaspberryPi, or InclusiveBlocks). Agents and PRs reference **that path**.
+- **Vault notes** may explain context, link `[[reference/…]]`, and point to a spec — they must not **replace** the spec as the only written contract.
+- If work spans hosts, either one spec with explicit cross-repo tasks or **linked** specs per repo; link vault essays to those spec paths for humans.

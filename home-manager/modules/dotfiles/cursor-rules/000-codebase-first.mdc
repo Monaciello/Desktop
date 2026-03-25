@@ -12,10 +12,16 @@ Read before you write. Every modification must respect what already exists.
 2. **Check for specs.** If `.ai/specs/` contains a relevant spec, follow it. If not, consider whether this change warrants one (3+ files, 30+ min).
 3. **Identify existing patterns.** Match the style, error handling, and abstraction level already in use — do not introduce new patterns without justification.
 
+## Documentation sources (git vs Obsidian vault)
+- **Contract / truth:** `AGENTS.md`, `.ai/specs/`, `flake.nix`, and Nix modules in **git** — what ships, reviews, and CI apply to.
+- **Narrative / exploration:** Obsidian notes under `docs/Desktop/` (and optionally `~/Sync/Obsidian`) — backlinks, runbooks, architecture essays.
+- **One source of truth per topic:** Do not author long canonical policy only in the vault if it belongs in git (update `AGENTS.md`, a reference under `docs/Desktop/reference/`, or a spec). Do not duplicate the same policy in two places without linking; prefer **git** for anything agents must enforce.
+- Before **large doc edits**, decide: is this contractual (→ git markdown + specs) or narrative (→ vault note with wikilinks to paths/commits)?
+
 ## Proactive Debt Scan
 When opening or modifying a file, flag:
 - **Implicit types** — missing type hints, use of `Any` (Python), untyped option values (Nix)
-- **Fragile error handling** — bare `except:`, `catch-all` patterns, missing `assertions` in Nix modules
+- **Fragile error handling** — bare `except:`, catch-all patterns, missing `assertions` in Nix modules
 - **Weak structures** — raw dicts where dataclasses/TypedDict belong, inline attrsets where module options should exist
 - **Orphaned dependencies** — imports/packages not used, devShell entries no longer needed
 
@@ -23,3 +29,5 @@ When opening or modifying a file, flag:
 - Do not refactor unrelated code while implementing a feature.
 - Do not introduce a new logging/error/config pattern if one already exists.
 - Do not assume conventions — verify by reading existing files.
+
+**Lookup:** Use Serena (or codebase search) to find canonical examples of patterns before introducing new ones.

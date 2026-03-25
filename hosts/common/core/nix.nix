@@ -1,12 +1,11 @@
-# Nix daemon settings shared across NixOS and nix-darwin
+# Nix daemon settings — core (all hosts)
 {
-  config,
   lib,
   inputs,
   ...
 }:
 let
-  flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
+  flakeInputs = import ../flake-inputs.nix { inherit lib inputs; };
 in
 {
   nixpkgs.config.allowUnfree = true;

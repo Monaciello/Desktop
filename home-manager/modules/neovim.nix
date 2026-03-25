@@ -18,15 +18,12 @@
       (nvim-treesitter.withPlugins (p: [
         p.nix
         p.python
-        p.rust
-        p.lua
         p.markdown
         p.bash
         p.json
         p.toml
         p.yaml
       ]))
-      # nvim-treesitter-refactor
 
       # Fuzzy finder
       telescope-nvim
@@ -74,14 +71,24 @@
 
     # LSP servers + runtime dependencies
     extraPackages = with pkgs; [
-      nixd # Nix language server
-      pyright # Python language server
-      imagemagick # For image.nvim
+      nixd
+      pyright
+      imagemagick
     ];
 
     extraLuaPackages = ps: [ ps.magick ];
 
-    # Lua configuration
-    initLua = builtins.readFile ./dotfiles/init.lua;
+    # Wire nvim-lspconfig to nixd + pyright (extraPackages above)
+    initLua = ''
+      vim.api.nvim_create_autocmd("VimEnter", {
+        once = true,
+        callback = function()
+          local lspconfig = require("lspconfig")
+          local caps = require("cmp_nvim_lsp").default_capabilities()
+          lspconfig.nixd.setup({ capabilities = caps })
+          lspconfig.pyright.setup({ capabilities = caps })
+        end,
+      })
+    '';
   };
 }

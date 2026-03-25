@@ -1,7 +1,5 @@
+# Review when exposing new TCP services, changing Tailscale usage, or SSH exposure.
 {
-  config,
-  pkgs,
-  lib,
   ...
 }:
 {

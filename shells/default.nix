@@ -40,12 +40,12 @@ let
   };
 
   linuxShells =
-    if isLinux then {
-      fhs =
-        (pkgs.buildFHSEnv {
-          name = "fhs";
-          targetPkgs =
-            p: [
+    if isLinux then
+      {
+        fhs =
+          (pkgs.buildFHSEnv {
+            name = "fhs";
+            targetPkgs = p: [
               p.zsh
               p.pkgsi686Linux.glibc
               p.pkgsi686Linux.stdenv.cc.cc.lib
@@ -53,17 +53,17 @@ let
               p.libxcursor
               p.libxrandr
             ];
-          multiPkgs =
-            p: [
+            multiPkgs = p: [
               p.pkgsi686Linux.glibc
               p.pkgsi686Linux.stdenv.cc.cc.lib
             ];
-          runScript = "zsh";
-        }).env;
-    }
+            runScript = "zsh";
+          }).env;
+      }
     else
       { };
 in
 {
   inherit default rust oci;
-} // linuxShells
+}
+// linuxShells

@@ -1,52 +1,7 @@
-### Cross-Platform Systems
+**Systems:** `[ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ]`
 
-```nix
-systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
-```
+**Platform-native deps:** `lib.optionals pkgs.stdenv.isLinux [...]` and `lib.optionals pkgs.stdenv.isDarwin [...]` for system libs. Use `config.home.homeDirectory` for paths.
 
-### Platform-native deps
+**Conditional config:** `lib.mkMerge` + `lib.mkIf` for enable flags and platform splits.
 
-```nix
-nativeBuildInputs = [
-  pkgs.python313 pkgs.uv
-] ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.stdenv.cc.cc.lib pkgs.zlib ]
-  ++ lib.optionals pkgs.stdenv.isDarwin [
-    pkgs.darwin.apple_sdk.frameworks.Security
-    pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
-  ];
-```
-
-### Platform-conditional config
-
-```nix
-let isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
-    homeDir = config.home.homeDirectory;
-in
-config = lib.mkMerge [
-  { programs.git.enable = true; }
-  (lib.mkIf pkgs.stdenv.isLinux { home.packages = [ pkgs.zathura ]; })
-  (lib.mkIf isDarwin { home.file.".config/app".source = "${homeDir}/Library/..."; })
-];
-```
-
-### Conditional Config
-
-```nix
-config = lib.mkMerge [
-  (lib.mkIf cfg.enable { services.x.enable = true; })
-  (lib.mkIf (cfg.enable && cfg.monitoring.enable) { services.prometheus.exporters.x.enable = true; })
-  { services.x.port = lib.mkDefault 8080; }
-];
-```
-
-### Canonical Examples in Desktop Flake
-
-These files demonstrate correct cross-platform patterns:
-
-- `shells/default.nix` — `isLinux` guard for FHS shell
-- `home-manager/programs/git.nix` — Platform-conditional 1Password paths
-- `home-manager/programs/ssh.nix` — Platform-conditional SSH agent socket
-- `home-manager/modules/zsh.nix` — Platform-split aliases (`pbcopy` vs `wl-copy`)
-- `home-manager/modules/lf.nix` — Platform-conditional file opener (`open` vs `xdg-open`)
-
-Refer to these when unsure how to guard platform-specific code.
+**Canonical:** @Desktop/shells/default.nix, @Desktop/home-manager/programs/git.nix, @Desktop/home-manager/programs/ssh.nix, @Desktop/home-manager/modules/zsh.nix, @Desktop/home-manager/modules/lf.nix

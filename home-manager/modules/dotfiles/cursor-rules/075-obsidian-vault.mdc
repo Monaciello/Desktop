@@ -1,0 +1,21 @@
+---
+description: "Obsidian vault notes for Nix homelab docs — frontmatter, wikilinks, confidentiality. Use when editing docs/Desktop or plan migrations to Sync."
+globs: "**/docs/Desktop/**/*.md, **/docs/**/*.md"
+alwaysApply: false
+---
+
+# Obsidian vault hygiene
+
+## Frontmatter
+- Use `tags:` with namespaces: `type/reference`, `scope/desktop`, `scope/raspberrypi`, `scope/inclusiveblocks`, `stack/nix`, `topic/rules`, etc. (see `docs/Desktop/reference/obsidian-vault-layout.md`).
+- Use `related:` with wikilinks to other notes: `"[[reference/configuration-role-matrix]]"`.
+
+## Wikilinks
+- Prefer `[[reference/slug]]` when the vault root includes `docs/Desktop` as opened folder; otherwise use relative markdown links so git remains readable without Obsidian.
+
+## Confidentiality
+- **No secrets** in notes: no decrypted passwords, tokens, or `secrets.yaml` values. Reference **file paths** and SOPS key names only.
+- For employer or personal classified material, keep outside the synced vault or in a non-synced path per your policy.
+
+## Relationship to code
+- Canonical automation and enforcement live in **git** (`AGENTS.md`, `.ai/specs/`, `*.nix`). The vault is for **human narrative** and cross-linking, not the sole source of flake truth.

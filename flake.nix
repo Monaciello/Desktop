@@ -19,7 +19,8 @@
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
     # Cursor IDE (desktop) — pinned tag, auto-updated 3x/week by upstream CI
-    code-cursor-nix.url = "github:jacopone/code-cursor-nix/v2.6.18";
+    code-cursor-nix.url = "github:jacopone/code-cursor-nix";
+
   };
 
   outputs =
@@ -33,15 +34,9 @@
       ...
     }@inputs:
     let
-      darwinPkgs = import inputs.nixpkgs-darwin {
-        system = "aarch64-darwin";
-        config.allowUnfree = true;
-      };
-
       commonOverlays = [
         self.overlays.additions
         self.overlays.modifications
-        self.overlays.unstable
       ];
 
       linuxOverlays = commonOverlays ++ [
@@ -57,14 +52,24 @@
 
       perSystem =
         {
-          pkgs,
           system,
           ...
         }:
+        let
+          inherit (nixpkgs) lib;
+        in
         {
-          packages = import ./pkgs nixpkgs.legacyPackages.${system};
+          packages = import ./pkgs { pkgs = nixpkgs.legacyPackages.${system}; };
           formatter = nixpkgs.legacyPackages.${system}.nixfmt;
           devShells = import ./shells { pkgs = nixpkgs.legacyPackages.${system}; };
+          # Host smoke tests: `nix flake check` builds the relevant system only.
+          checks =
+            lib.optionalAttrs (system == "x86_64-linux") {
+              nixos-alice = self.nixosConfigurations.alice.config.system.build.toplevel;
+            }
+            // lib.optionalAttrs (system == "aarch64-darwin") {
+              darwin-macbook = self.darwinConfigurations.macbook.system;
+            };
         };
 
       flake = {
@@ -87,6 +92,18 @@
               }
               ./home-manager/home.nix
               ./home-manager/linux.nix
+            ];
+          };
+          "sasha@macbook" = home-manager.lib.homeManagerConfiguration {
+            pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+            extraSpecialArgs = { inherit inputs; };
+            modules = [
+              {
+                nixpkgs.config.allowUnfree = true;
+                nixpkgs.overlays = commonOverlays;
+              }
+              ./home-manager/home.nix
+              ./home-manager/darwin.nix
             ];
           };
         };

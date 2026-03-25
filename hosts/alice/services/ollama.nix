@@ -6,7 +6,7 @@
     enable = true;
     package = pkgs.ollama-cpu;
     loadModels = [
-      "qwen2.5-coder:7b"   # Chat, inline edits
+      "qwen2.5-coder:7b" # Chat, inline edits
       "qwen2.5-coder:1.5b" # Autocomplete
     ];
   };

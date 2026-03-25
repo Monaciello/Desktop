@@ -11,7 +11,8 @@ python3.pkgs.buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "nir0s";
     repo = "backtrace";
-    rev = "master";
+    # Pinned: upstream has no tags; this is the commit that matched the previous fixed-output hash.
+    rev = "a1f75c956f669a6175088693802d5392e6bd7e51";
     hash = "sha256-F4tvYQ9XmKALMiwak+oa7nqWoLe2zvVOiTv9/gmQfcQ=";
   };
 

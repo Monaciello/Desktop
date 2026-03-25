@@ -1,4 +1,4 @@
-# Nix and nixpkgs settings — alice-specific overrides on top of hosts/common
+# Nix daemon settings — align developer ergonomics with `hosts/alice/nix.nix`
 {
   config,
   lib,
@@ -12,7 +12,6 @@ in
   nix = {
     settings = {
       nix-path = config.nix.nixPath;
-      # Allow sasha to use extra substituters declared in flakes (e.g. nixos-raspberrypi.cachix.org).
       trusted-users = [
         "root"
         "sasha"
@@ -20,7 +19,5 @@ in
     };
     channel.enable = false;
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
-
-    gc.dates = "weekly";
   };
 }

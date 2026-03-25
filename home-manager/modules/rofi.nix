@@ -1,7 +1,4 @@
-{ inputs, pkgs, config, ... }:
-let
-  colors = import ./colors.nix;
-in
+{ pkgs, config, ... }:
 {
   programs.rofi = {
     enable = true;

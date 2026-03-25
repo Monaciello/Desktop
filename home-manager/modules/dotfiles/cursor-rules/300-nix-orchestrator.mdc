@@ -1,28 +1,38 @@
 ---
 description: Nix/NixOS, Skarabox, and SOPS Orchestration for Python/Rust environments
-globs: **/*.nix, flake.lock, secrets.yaml, .sops.yaml
+globs: "**/*.nix, flake.lock, secrets.yaml, .sops.yaml"
 alwaysApply: true
 ---
+
 # Nix & IaC Orchestration
 
 ## Secrets — Non-Negotiable
-- **Never** hardcode secrets in Python/Rust/Nix. Check `secrets.yaml` or SOPS integration first.
-- System dependencies required by Python libraries or Rust crates (e.g., `openssl`, `pkg-config`) MUST be added to `devShell`.
+- **Never** hardcode secrets in Python/Rust/Nix. Use SOPS or `secrets.yaml` ([nix-community/sops-nix Usage](https://github.com/Mic92/sops-nix#usage)).
+- Add required system dependencies (e.g., `openssl`, `pkg-config`) to your `devShell`.
 
 ## Flake First
-- `flake.nix` is the single source of truth for package versions.
-- Standalone `shell.nix` with `import <nixpkgs>` is forbidden — every devShell MUST be reachable via `nix develop`.
-- Use `nixfmt` for formatting (matches flake formatter).
+- `flake.nix` is the canonical source for package versions ([NixOS Flake Manual](https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html)).
+- Forbid legacy `shell.nix = import <nixpkgs>` — always use `nix develop`.
+- Format Nix code with `nixfmt` ([nixfmt Usage](https://github.com/nix-community/nixfmt#usage)).
 
 ## Python in Nix
-- Use `uv` + `pyproject.toml` for dependencies (defer to `350-python-nix.mdc`).
-- Nix provides only: interpreter (`pkgs.python3XX`) + `pkgs.uv` + system libraries.
-- Never use `python3.withPackages` or `pip install`.
+- Use `uv` + `pyproject.toml` ([Nixpkgs Python packaging guide](https://nixos.org/manual/nixpkgs/stable/#python)).
+- Only include: interpreter (`pkgs.python3XX`), `pkgs.uv`, system dependencies.
+- Do not use `python3.withPackages` or `pip install`.
 
 ## Rust in Nix
-- Use `rust-overlay` or `crane` for reproducible builds.
+- Use `rust-overlay` or `crane` ([crane Nixpkgs docs](https://github.com/ipetkov/crane#nixpkgs-flake-support)) for reproducible builds.
 
 ## Discovery Protocol
-When unsure of a Nix attribute:
-- `nix-locate -w <file>` — find which package provides a header/binary.
-- `rg "services.<name>"` — check how modules are currently implemented.
+- **nixos-mcp:** for module/option discovery.
+- **nix-locate -w <file>:** find which Nix package provides needed files.
+- **rg "services.<name>":** review service/module usage.
+
+**Canonical SOPS:** @InclusiveBlocks/nuc/configuration.nix, @RaspberryPi/hosts/rpi4-01/configuration.nix
+**Canonical flake:** @Desktop/flake.nix, @InclusiveBlocks/flake.nix, @RaspberryPi/flake.nix
+
+## Obsidian vault & scope tags
+- **Vault paths:** Narrative notes live under `docs/Desktop/` (and may sync to `~/Sync/Obsidian`). They **do not** replace flakes or specs.
+- **Scope tags (vault frontmatter):** Align notes with the flake you are changing — e.g. `#scope/desktop` → `Desktop/flake.nix`, `#scope/raspberrypi` → `RaspberryPi/flake.nix`, `#scope/inclusiveblocks` → `InclusiveBlocks/flake.nix`. See `docs/Desktop/reference/obsidian-vault-layout.md`.
+- **Secrets in notes:** **Never** paste secret values or decrypted YAML into vault notes. Link to **paths** only (e.g. `RaspberryPi/hosts/rpi4-01/secrets.yaml`), same policy as code.
+- **Flake inputs:** Organizing vault folders does **not** add flake inputs; keep **one `nixpkgs`** per repo and `follows` for shared inputs (`sops-nix`, `disko`, etc.).

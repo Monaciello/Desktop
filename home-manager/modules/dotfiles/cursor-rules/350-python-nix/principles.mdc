@@ -1,14 +1,5 @@
-**Separation of Concerns**
-- Nix manages: interpreter version, system C libraries, shell environment
-- uv manages: Python packages, virtual environment, dependency locking
-- This separation enables: reproducible builds, cross-platform compatibility, fast rebuilds
+**Separation:** Nix manages interpreter version, system C libraries, shell environment. uv manages Python packages, virtualenv, lockfile.
 
-**Why Flakes are Mandatory**
-- `import <nixpkgs>` is impure (non-reproducible, breaks on different machines)
-- Flakes pin all inputs (nixpkgs version, dependencies) via `flake.lock`
-- Multi-system support (`systems = [...]`) is first-class in flakes
+**Why flakes:** `import <nixpkgs>` is impure. Flakes pin inputs via `flake.lock`. Multi-system support is first-class.
 
-**Why uv (not pip/poetry)**
-- Fastest Python package manager (written in Rust)
-- Native lockfile support (uv.lock tracks transitive dependencies)
-- Compatible with standard `pyproject.toml` (no vendor lock-in)
+**Why uv:** Fast, native lockfile support, standard `pyproject.toml` compatibility.

@@ -6,6 +6,8 @@
     userDirs = {
       enable = true;
       createDirectories = true;
+      # HM 26.05+: default became false; keep exporting XDG_* in sessions (Sway, etc.)
+      setSessionVariables = true;
       documents = "${config.home.homeDirectory}/Files/Documents";
       download = "${config.home.homeDirectory}/Files/Downloads";
       pictures = "${config.home.homeDirectory}/Pictures";

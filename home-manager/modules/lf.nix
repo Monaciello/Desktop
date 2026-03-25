@@ -2,7 +2,6 @@
 
 let
   isLinux = pkgs.stdenv.hostPlatform.isLinux;
-  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
 
   # Cross-platform tools
   mpv = pkgs.mpv;
@@ -171,19 +170,18 @@ in
     '';
   };
 
-  home.packages =
-    [
-      pistol
-      pkgs.unzip
-      pkgs.unrar
-      pkgs.p7zip
-      pkgs.gnutar
-      pkgs.poppler-utils
-      pkgs.fzf
-      pkgs.ripgrep
-      pkgs.findutils
-    ]
-    ++ lib.optionals isLinux [ pkgs.dragon-drop ];
+  home.packages = [
+    pistol
+    pkgs.unzip
+    pkgs.unrar
+    pkgs.p7zip
+    pkgs.gnutar
+    pkgs.poppler-utils
+    pkgs.fzf
+    pkgs.ripgrep
+    pkgs.findutils
+  ]
+  ++ lib.optionals isLinux [ pkgs.dragon-drop ];
 
   xdg.configFile."lf/icons".source = pkgs.fetchurl {
     url = "https://raw.githubusercontent.com/gokcehan/lf/master/etc/icons.example";

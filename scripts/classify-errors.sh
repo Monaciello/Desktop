@@ -19,19 +19,19 @@ classify_error() {
   local line="$1"
 
   if echo "$line" | grep -qE "error: builder failed|syntax error|not found|undefined variable|attribute.*missing|does not exist"; then
-    printf "${RED}CRITICAL: %s${NC}\n" "$line"
+    printf '%sCRITICAL: %s%s\n' "$RED" "$line" "$NC"
     return 1
   elif echo "$line" | grep -qE "cross-compilation|incompatible systems|warning:|deprecated|experimental"; then
-    printf "${YELLOW}EXPECTED: %s${NC}\n" "$line"
+    printf '%sEXPECTED: %s%s\n' "$YELLOW" "$line" "$NC"
     return 0
   elif echo "$line" | grep -qE "configuration|setting|option"; then
-    printf "${BLUE}CONFIG:   %s${NC}\n" "$line"
+    printf '%sCONFIG:   %s%s\n' "$BLUE" "$line" "$NC"
     return 0
   elif echo "$line" | grep -qE "slow|optimization|performance|memory|disk space"; then
-    printf "${ORANGE}WARNING:  %s${NC}\n" "$line"
+    printf '%sWARNING:  %s%s\n' "$ORANGE" "$line" "$NC"
     return 0
   else
-    printf "${GREEN}INFO:     %s${NC}\n" "$line"
+    printf '%sINFO:     %s%s\n' "$GREEN" "$line" "$NC"
     return 0
   fi
 }
@@ -53,10 +53,10 @@ main() {
   echo "Summary: $total lines, $critical critical"
 
   if [ "$critical" -gt 0 ]; then
-    printf "${RED}%d critical errors — immediate action required${NC}\n" "$critical"
+    printf '%s%d critical errors — immediate action required%s\n' "$RED" "$critical" "$NC"
     exit 1
   else
-    printf "${GREEN}No critical errors${NC}\n"
+    printf '%sNo critical errors%s\n' "$GREEN" "$NC"
     exit 0
   fi
 }

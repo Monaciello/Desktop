@@ -1,22 +1,16 @@
 { pkgs, ... }:
 {
   environment.systemPackages = with pkgs; [
+    rpi-imager
     wget
     curl
     git
-    swaylock
     swayidle
     kanshi
-    wl-clipboard
     wtype
     wlr-randr
-    grim
-    slurp
-    rofi
     mako
     wdisplays
-    brightnessctl
-    playerctl
     flameshot
     acpi
     sysstat

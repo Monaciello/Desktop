@@ -1,44 +1,6 @@
-```nix
-{
-  description = "...";
-  inputs = {
-    nixpkgs.url = "...";
-    flake-parts.url = "...";
-    home-manager = {
-      url = "...";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-  };
-  outputs = { self, nixpkgs, flake-parts, ... }@inputs:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
-      perSystem = { pkgs, ... }: {
-        devShells.default = pkgs.mkShell { nativeBuildInputs = [ pkgs.git ]; };
-        packages.default = pkgs.hello;
-      };
-      flake.nixosConfigurations.myhost = nixpkgs.lib.nixosSystem { modules = [ ./configuration.nix ]; };
-    };
-}
-```
+**Flake structure:** `description`, `inputs` (with `follows`), `outputs` destructured from `@inputs`. Use `flake-parts.lib.mkFlake` when appropriate.
 
-## Module Structure
+**Module structure:** `{ lib, config, pkgs, ... }:`, `let cfg = config.mySpace.myModule; in`, `options` + `config` with `lib.mkIf`/`lib.mkMerge`, `assertions` for validation.
 
-```nix
-{ lib, config, pkgs, ... }:
-let cfg = config.mySpace.myModule;
-in {
-  options.mySpace.myModule = {
-    enable = lib.mkEnableOption "...";
-    package = lib.mkOption {
-      type = lib.types.package; default = pkgs.example; description = "...";
-    };
-    settings = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str; default = {}; description = "...";
-    };
-  };
-  config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-    assertions = [{ assertion = cfg.settings != {}; message = "Settings can't be empty"; }];
-  };
-}
-```
+**Canonical:** @Desktop/flake.nix, @Desktop/hosts/alice/default.nix
+**Lookup:** Use nixos-mcp for `mkOption`, `mkEnableOption`, and submodule patterns.

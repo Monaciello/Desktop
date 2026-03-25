@@ -13,9 +13,9 @@
 let
   colors = import ./colors.nix;
 
-  mod = "Mod4";   # Super -- all WM controls
+  mod = "Mod4"; # Super -- all WM controls
   modApp = "Mod1"; # Alt   -- app launchers only
-  mod4 = "Mod4";  # Super+app shortcuts
+  mod4 = "Mod4"; # Super+app shortcuts
   terminal = "${pkgs.kitty}/bin/kitty";
   wallpaper = "$HOME/Pictures/wallpapers/wallpaper";
 in
@@ -40,6 +40,8 @@ in
         { command = "${pkgs.flameshot}/bin/flameshot"; }
         { command = "${pkgs.networkmanagerapplet}/bin/nm-applet --indicator"; }
         { command = "${pkgs.mako}/bin/mako"; }
+        # Polkit agent: required for rpi-imager (and sudo prompts) to get block device access
+        { command = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1"; }
       ];
 
       input = {
@@ -160,7 +162,8 @@ in
         "${mod}+g" = "mode gaps";
 
         # Power menu (override default exit prompt)
-        "${mod}+Shift+e" = "exec ${pkgs.sway}/bin/swaynag -f 'Cascadia Code, 12' -m 'Exit Sway? This will end your current Wayland session.' -B 'Exit now' 'swaymsg exit' -B 'Suspend' 'systemctl suspend' -B 'Reboot' 'systemctl reboot' -B 'Power off' 'systemctl poweroff'";
+        "${mod}+Shift+e" =
+          "exec ${pkgs.sway}/bin/swaynag -f 'Cascadia Code, 12' -m 'Exit Sway? This will end your current Wayland session.' -B 'Exit now' 'swaymsg exit' -B 'Suspend' 'systemctl suspend' -B 'Reboot' 'systemctl reboot' -B 'Power off' 'systemctl poweroff'";
       };
 
       modes = {

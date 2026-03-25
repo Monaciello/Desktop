@@ -10,9 +10,9 @@
   home = {
     username = "sasha";
     homeDirectory = lib.mkDefault "/home/sasha";
-    stateVersion = "24.11";
+    stateVersion = "26.05";
   };
 
-  # Lock zsh dotDir to legacy behavior (silence HM 26.05 warning)
+  # Keep dotfiles at ~/.zshrc etc. (HM 26.05+ default would use XDG under ~/.local/state)
   programs.zsh.dotDir = config.home.homeDirectory;
 }

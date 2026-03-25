@@ -3,7 +3,7 @@
 # Mode: vi
 # Pane nav: Space+h/j/k/l
 # Pane resize: Ctrl+Alt+h/j/k/l (no prefix)
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 let
   clipboardCmd = if pkgs.stdenv.hostPlatform.isDarwin then "pbcopy" else "wl-copy";
 in

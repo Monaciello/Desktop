@@ -12,76 +12,37 @@ in
       mainBar = {
         layer = "top";
         position = "top";
-        height = 30;
-        spacing = 7;
+        height = 36;
+        spacing = 12;
 
-        modules-left = [
-          "sway/workspaces"
-          "sway/mode"
-          "sway/window"
-        ];
+        # Mac-like: minimal left, right-aligned essential status modules, simple center
+        modules-left = [ ];
         modules-center = [ ];
         modules-right = [
           "network"
-          "cpu"
-          "disk"
           "pulseaudio"
           "battery"
           "clock"
         ];
 
-        "sway/workspaces" = {
-          disable-scroll = false;
-          all-outputs = true;
-          format = "{name}";
-        };
-
-        "sway/mode" = {
-          format = "<span style=\"italic\">{}</span>";
-        };
-
-        "sway/window" = {
-          format = "{}";
-          max-length = 50;
-          tooltip = false;
-        };
-
+        # Module definitions
         network = {
-          format-wifi = "  {essid} ({signalStrength}%)";
-          format-ethernet = "  {ifname}";
-          format-linked = "  {ifname} (No IP)";
-          format-disconnected = "⚠ Disconnected";
+          format-wifi = "󰤨 {essid}";
+          format-ethernet = "󰈁 {ifname}";
+          format-linked = "󰈁 {ifname} (No IP)";
+          format-disconnected = "󰤭 Offline";
           tooltip-format = "{ifname}: {ipaddr}/{cidr}";
           on-click = "${pkgs.networkmanagerapplet}/bin/nm-connection-editor";
         };
 
-        cpu = {
-          format = "  {usage}%";
-          tooltip = false;
-          interval = 1;
-        };
-
-        disk = {
-          format = "  {percentage_used}%";
-          path = "/";
-          interval = 30;
-          tooltip-format = "{path}: {used} / {total}";
-        };
-
         pulseaudio = {
           format = "{icon} {volume}%";
-          format-muted = " Muted";
+          format-muted = "󰖁 Muted";
           format-icons = {
-            headphone = "";
-            hands-free = "";
-            headset = "";
-            phone = "";
-            portable = "";
-            car = "";
             default = [
-              ""
-              ""
-              ""
+              "󰕾" # high
+              "󰖀" # med
+              "󰕿" # low
             ];
           };
           on-click = "${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle";
@@ -89,111 +50,95 @@ in
 
         battery = {
           bat = "BAT0";
-          interval = 5;
+          interval = 8;
           states = {
             warning = 30;
             critical = 15;
           };
           format = "{icon} {capacity}%";
-          format-charging = " {capacity}%";
-          format-plugged = " {capacity}%";
+          format-charging = " {capacity}%";
+          format-plugged = "󰚥 {capacity}%";
           format-alt = "{icon} {time}";
           format-icons = [
-            ""
-            ""
-            ""
-            ""
-            ""
+            "󰁺"
+            "󰂆"
+            "󰁼"
+            "󰁾"
+            "󰁹"
           ];
         };
 
         clock = {
-          format = "  {:%a %b %d  %H:%M}";
-          tooltip-format = "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>";
+          format = "{:%a %d %b  %H:%M}";
+          tooltip-format = "<big>{:%A, %B %d, %Y}</big>";
         };
       };
     };
 
     style = ''
       * {
-        font-family: "Cascadia Code", monospace;
-        font-size: 12px;
+        font-family: "San Francisco", "SF Pro Text", "Inter", "Segoe UI", "Cantarell", "Noto Sans", "Cascadia Code", "monospace", sans-serif;
+        font-size: 16px;
         border: none;
-        border-radius: 0;
+        border-radius: 10px;
         min-height: 0;
       }
 
       window#waybar {
-        background-color: rgba(15, 28, 33, 0.7);
+        background: rgba(245, 245, 245, 0.72);
         color: ${colors.text};
-      }
-
-      #workspaces button {
-        padding: 0 10px;
-        color: ${colors.mauve};
-        background-color: rgba(15, 28, 33, 0.7);
-      }
-
-      #workspaces button.focused {
-        color: #0f1c21;
-        background-color: ${colors.yellow};
-      }
-
-      #workspaces button.active {
-        color: #0f1c21;
-        background-color: ${colors.mauve};
-      }
-
-      #workspaces button.urgent {
-        color: ${colors.text};
-        background-color: ${colors.teal};
-      }
-
-      #mode {
-        color: ${colors.text};
-        background-color: rgba(15, 28, 33, 0.7);
-        padding: 0 10px;
-      }
-
-      #window {
-        color: ${colors.text};
-        background-color: rgba(15, 28, 33, 0.7);
-        padding: 0 10px;
+        border-radius: 12px;
+        box-shadow: 0px 2px 8px 0px rgba(0,0,0,0.07);
       }
 
       #network,
-      #cpu,
-      #disk,
       #pulseaudio,
       #battery,
       #clock {
-        color: ${colors.text};
-        background-color: rgba(15, 28, 33, 0.7);
-        padding: 0 10px;
+        color: #222222;
+        background: transparent;
+        padding: 0 18px;
+        margin: 4px 0;
+        border-radius: 10px;
       }
 
-      #battery.charging {
+      #clock {
+        font-weight: 520;
+        letter-spacing: 0.5px;
+      }
+
+      #network {
+        font-family: "SF Pro Text", "Segoe UI", "Cantarell", "Noto Sans", "monospace", sans-serif;
+        font-weight: 450;
+      }
+
+      #pulseaudio {
+        font-family: "SF Pro Text", monospace, sans-serif;
+      }
+
+      #battery.charging,
+      #battery.plugged {
         color: ${colors.green};
       }
 
-      #battery.warning:not(.charging) {
+      #battery.warning:not(.charging):not(.plugged) {
         color: ${colors.yellow};
       }
 
-      #battery.critical:not(.charging) {
+      #battery.critical:not(.charging):not(.plugged) {
         color: ${colors.red};
-        animation: blink 0.5s linear infinite alternate;
+        animation: blink 0.8s linear infinite alternate;
       }
 
       @keyframes blink {
         to {
-          background-color: ${colors.red};
-          color: #0f1c21;
+          background: ${colors.red};
+          color: #fff;
         }
       }
 
       #pulseaudio.muted {
-        color: ${colors.overlay1};
+        color: #aaaaaa;
       }
     '';
   };

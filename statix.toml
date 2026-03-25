@@ -1,0 +1,14 @@
+# Statix — https://github.com/nerdy-pink/statix
+# - hardware-configuration.nix: nixos-generate-config output
+# - manual_inherit_from / repeated_keys / empty_pattern: HM modules use verbose attrsets and `{ ... }` modules
+disabled = [
+  "manual_inherit",
+  "manual_inherit_from",
+  "repeated_keys",
+  "empty_pattern",
+]
+ignore = [
+  ".direnv",
+  "secrets",
+  "hosts/alice/hardware-configuration.nix",
+]

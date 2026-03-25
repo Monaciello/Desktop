@@ -7,12 +7,12 @@
   xdg.configFile."flameshot/flameshot.ini" = {
     force = true;
     text = ''
-    [General]
-    drawColor=#800000
-    savePath=${config.home.homeDirectory}/Pictures
-    useGrimAdapter=true
-    disabledTrayIcon=false
-    showStartupLaunchMessage=false
-  '';
+      [General]
+      drawColor=#800000
+      savePath=${config.home.homeDirectory}/Pictures
+      useGrimAdapter=true
+      disabledTrayIcon=false
+      showStartupLaunchMessage=false
+    '';
   };
 }

@@ -1,23 +1,9 @@
-**Why:**  
-- Breaks static tooling (`nixd`, `nil`)  
-- Hides scope/causes IDE completion failures  
+**Why no `with`:**
+- Breaks static tooling (`nixd`, `nil`)
+- Hides scope / causes IDE completion failures
 - Reduces code readability
 
-```nix
-# ❌ BAD
-environment.systemPackages = with pkgs; [ git vim ];
-meta = with lib; { license = licenses.mit; };
-# ✅ GOOD
-environment.systemPackages = [ pkgs.git pkgs.vim ];
-meta = { license = lib.licenses.mit; };
-```
+**Principles:** Explicit > Implicit attribute paths. Pure, declarative functional design. Use `let-in`, never `rec`. Format: `nixfmt`. Destructure args, never use `with`.
 
-## Core Principles
-
-```markdown
-- Explicit > Implicit attribute paths
-- Pure, declarative functional design
-- Use let-in, never rec
-- Format: `nixfmt`
-- Destructure args, never use `with`
-```
+**Canonical:** @Desktop/hosts/alice/nix.nix, @Desktop/hosts/common/nix.nix
+**Lookup:** Use nixos-mcp for option types and module patterns.

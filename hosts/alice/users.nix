@@ -12,6 +12,8 @@
       "networkmanager"
       "wheel"
       "libvirtd"
+      # Raw block device access for rpi-imager (udisks2/polkit path fails in AppImage FHS)
+      "disk"
     ];
     shell = pkgs.zsh;
     openssh.authorizedKeys.keys = [

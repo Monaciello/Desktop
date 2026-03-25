@@ -8,16 +8,12 @@ globs: "**/*.py"
 High-integrity Python code that maps logically to Rust concepts.
 
 ## Linter Simulation (Pre-flight)
-Before providing code, verify against these rules:
-- `ANN401`: Disallow `Any`. Use specific Unions or Generics.
-- `TRY002`: No generic `Exception`. Must use custom `Exception` subclasses.
-- `IMM001`: All `dataclasses` must be `frozen=True`.
-- `LOG001`: No bare `print()`. Use `import logging` or `from loguru import logger`.
-- `LOG002`: Logging calls must include structured context (e.g. `logger.info("event", key=value)`).
+Before providing code, verify against: `ANN401` (no Any), `TRY002` (custom exceptions), `IMM001` (frozen dataclasses), `LOG001`/`LOG002` (structured logging).
+**Canonical:** Check `pyproject.toml` or ruff config in the project for active rules.
 
 ## Atomic Mandate
 - **No Partial Fixes:** If you touch a function, refactor it entirely to modern standards.
-- **Stop-and-Fix:** If a function has upstream dependencies (like a raw dict being passed in), list those dependencies and refuse to proceed until they are also refactored.
+- **Stop-and-Fix:** If a function has upstream dependencies (e.g. raw dict), list them and refuse to proceed until refactored.
 
 ## Rust Observability (for .rs files)
 - Use `tracing::info!` / `tracing::warn!` / `tracing::error!` — never `println!` or `eprintln!`.

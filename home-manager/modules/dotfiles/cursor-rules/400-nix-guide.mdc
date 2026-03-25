@@ -1,6 +1,8 @@
 ---
 name: nix-guidelines
 description: Use when writing Nix code for flakes, modules, or packages
+globs: "**/*.nix"
+alwaysApply: false
 ---
 
 # Nix Guidelines: Idioms for flakes, modules, and packages
